@@ -50,3 +50,25 @@ def conv_norm_lrelu(in_dim, out_dim, kernel_size, stride=1, padding=0,
                          norm_layer(out_dim), nn.LeakyReLU(0.2, True))
 
 
+def conv_norm_relu(in_dim, out_dim, kernel_size, stride=1, padding=0, 
+                    norm_layer = nn.BatchNorm2d, bias=False):
+    return nn.Sequential(nn.Conv2d(in_dim, out_dim, kernel_size, stride, padding, bias=bias), 
+                         norm_layer(out_dim), nn.ReLU(True))
+
+
+def dconv_norm_relu(in_dim, out_dim, kernel_size, stride = 1, padding=0, output_padding=0,
+                    norm_layer = nn.BatchNorm2d, bias = False):
+    return nn.Sequential(nn.ConvTranspose2d(in_dim, out_dim, kernel_size, stride, padding, output_padding, bias = bias),
+                         norm_layer(out_dim), nn.ReLU(True))
+
+
+class ResidualBlock(nn.Module):
+    def __init__(self, dim, norm_layer, use_dropout, use_bias):
+        super(ResidualBlock, self).__init__()
+        res_block = [nn.ReflectionPad2d(1),
+                     conv_norm_relu(dim, dim, kernel_size=3,
+                                    norm_layer=norm_layer, bias=use_bias)]
+        if use_dropout:
+            res_block += [nn.Dropout(0.5)]
+        res_block += [nn.ReflectionPad2d(1),
+                      nn.Conv2d(dim, dim, kernel_size=)]
