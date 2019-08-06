@@ -14,3 +14,24 @@ def get_norm_layer(norm_type='instance'):
     return norm_layer
 
 
+def init_weights(net, init_type='normal', gain=0.02):
+    def init_func(m):
+        classname = m.__class__.__name__
+        if hasattr(m, 'weight') and (classname.find('Conv') != -1 or classname.find('Linear') != -1):
+            if init_type == 'normal':
+                init.normal(m.weight.data, 0.0, gain)
+            else:
+                raise NotImplementedError('[%s] init type not not found' % init_type)
+            if hasattr(m, 'bias') and m.bias is not None:
+                init.constant(m.bias.data, 0.0)
+        elif classname.find('BatchNorm2d') != -1:
+            if init_type == 'normal':
+                init.normal(m.weight.data, 0.0, gain)
+            else:
+                raise NotImplementedError('[%s] init type not not found' % init_type)
+            init.constant(m.bias.data, 0.0)
+            
+    print('Network initialized with weights sampled from N(0,[%s]).' % gain)
+    net.apply(init_func)
+
+
