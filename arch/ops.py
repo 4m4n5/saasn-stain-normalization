@@ -71,4 +71,18 @@ class ResidualBlock(nn.Module):
         if use_dropout:
             res_block += [nn.Dropout(0.5)]
         res_block += [nn.ReflectionPad2d(1),
-                      nn.Conv2d(dim, dim, kernel_size=)]
+                      nn.Conv2d(dim, dim, kernel_size=3, padding=0, bias=use_bias),
+                      norm_layer(dim)]
+        
+        self.res_block = nn.Sequential(*res_block)
+        
+    def forward(self, x):
+        return x + self.res_block(x)
+
+
+def set_grad(nets, requires_grad=False):
+    for net in nets:
+        for param in net.parameters():
+            param.requires_grad = requires_grad
+
+
