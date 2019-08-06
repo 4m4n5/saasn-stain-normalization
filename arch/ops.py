@@ -44,3 +44,6 @@ def init_network(net, gpu_ids=[]):
     return net
 
 
+def conv_norm_lrelu(in_dim, out_dim, kernel_size, stride=1, padding=0, 
+                    norm_layer = nn.BatchNorm2d, bias=False):
+    return nn.Sequential(nn.Conv2d(in_dim, out_dim, kernel_size, stride, padding, bias))
