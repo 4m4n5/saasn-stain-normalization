@@ -133,5 +133,3 @@ class UnetSkipConnectionBlock(nn.Module):
         
         else:
             return torch.cat([x, self.model(x)], 1)
-
-
