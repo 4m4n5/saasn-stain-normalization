@@ -125,7 +125,7 @@ class cycleGAN(object):
                 # Adverserial loss
                 # Da return 1 for an image in domain A
                 a_fake_dis = self.Da(a_fake)
-                b_fake_dis = self_Db(b_fake)
+                b_fake_dis = self.Db(b_fake)
                 
                 # Label expected here is 1 to fool the discriminator
                 expected_label = utils.cuda(Variable(torch.ones(a_fake_dis.size())))
