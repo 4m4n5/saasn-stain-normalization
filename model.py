@@ -207,3 +207,5 @@ class cycleGAN(object):
             # Update learning rates
             self.g_lr_scheduler.step()
             self.d_lr_scheduler.step()
+
+
