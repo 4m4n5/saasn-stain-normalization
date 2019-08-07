@@ -22,4 +22,7 @@ class UnetGenerator(nn.Module):
         self.unet_model = unet_block
         
     def forward(self, input):
-        return self
+        return self.unet_model(input)
+
+
+def ResnetGene
