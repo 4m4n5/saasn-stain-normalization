@@ -53,9 +53,8 @@ class ResnetGenerator(nn.Module):
 
 
 def define_Gen(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, gpu_ids=[0]):
-    gen_net = None
     norm_layer = get_norm_layer(norm_type=norm)
-
+    gen_net = None
     if netG == 'resnet_9blocks':
         gen_net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, num_blocks=9)
     elif netG == 'resnet_6blocks':

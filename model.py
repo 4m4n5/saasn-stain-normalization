@@ -8,9 +8,7 @@ from torch import nn
 from torch.autograd import Variable
 import torchvision.datasets as dsets
 import torchvision.transforms as transforms
-
-# YET TO IMPLEMNET
-# import utils
+import utils
 
 from arch import *
 from torch.optim import lr_scheduler

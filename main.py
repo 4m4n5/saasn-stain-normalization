@@ -33,7 +33,7 @@ args = {
     'results_dir': '/project/DSone/ss4yd/chrc_data_patches_1000/results/',
     'dataset_dir': '/project/DSone/ss4yd/chrc_data_patches_1000/',
     'checkpoint_dir': '/project/DSone/ss4yd/chrc_data_patches_1000/results/',
-    'norm': 'instance',
+    'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
     'ndf': 64,
@@ -60,7 +60,7 @@ def main(args):
         
     if args.testing:
         print('Testing')
-        tst
+        tst.test(args)
 
 
 main(args)

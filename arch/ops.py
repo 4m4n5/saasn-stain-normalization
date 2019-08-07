@@ -124,7 +124,7 @@ class UnetSkipConnectionBlock(nn.Module):
             else: 
                 model = down + [submodule] + up
                 
-            self.model = nn.Sequential(*model)
+        self.model = nn.Sequential(*model)
             
     
     def forward(self, x):
