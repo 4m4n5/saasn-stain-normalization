@@ -52,3 +52,19 @@ class ResnetGenerator(nn.Module):
         return self.res_model(x)
 
 
+def define_Gen(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, gpu_ids=[0]):
+    gen_net = None
+    norm_layer = get_norm_layer(norm_type=norm)
+
+    if netG == 'resnet_9blocks':
+        gen_net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, num_blocks=9)
+    elif netG == 'resnet_6blocks':
+        gen_net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, num_blocks=6)
+    elif netG == 'unet_128':
+        gen_net = UnetGenerator(input_nc, output_nc, 7, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
+    elif netG == 'unet_256':
+        gen_net = UnetGenerator(input_nc, output_nc, 8, ngf, norm_layer=norm_layer, use_dropout=use_dropout)
+    else:
+        raise NotImplementedError('Generator model name [%s] is not recognized' % netG)
+
+    return init_network(gen_net, gpu_ids)
