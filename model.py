@@ -30,8 +30,7 @@ class cycleGAN(object):
         self.Da = define_Dis(input_nc=3, ndf=args.ndf, netD= args.dis_net, n_layers_D=3, norm=args.norm, gpu_ids=args.gpu_ids)
         self.Db = define_Dis(input_nc=3, ndf=args.ndf, netD= args.dis_net, n_layers_D=3, norm=args.norm, gpu_ids=args.gpu_ids)
         
-        # YET TO IMPLEMENT
-        # utils.print_networks([self.Gab,self.Gba,self.Da,self.Db], ['Gab','Gba','Da','Db'])
+        utils.print_networks([self.Gab,self.Gba,self.Da,self.Db], ['Gab','Gba','Da','Db'])
         
         # Loss functions
         self.MSE = nn.MSELoss()
@@ -105,8 +104,7 @@ class cycleGAN(object):
                 # Real images from sets A and B
                 a_real = Variable(a_real[0])
                 b_real = Variable(b_real[0])
-                # YET TO IMPLEMENT
-                # a_real, b_real = utils.cuda([a_real, b_real])
+                a_real, b_real = utils.cuda([a_real, b_real])
                 
                 # Passing through generators
                 # Nomenclature. a_fake is fake image generated from b_real in the domain A.
