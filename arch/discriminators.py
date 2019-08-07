@@ -1,5 +1,5 @@
 from torch import nn
-from ops import *
+from .ops import *
 import torch
 from torch.nn import functional as F
 import functools
@@ -53,5 +53,23 @@ class PixelDiscriminator(nn.Module):
 
     def forward(self, input):
         return self.dis_model(input)
+
+
+def define_Dis(input_nc, ndf, netD, n_layers_D=3, norm='batch', gpu_ids=[0]):
+    dis_net = None
+    norm_layer = get_norm_layer(norm_type=norm)
+    if type(norm_layer) == functools.partial:
+        use_bias = norm_layer.func == nn.InstanceNorm2d
+    else:
+        use_bias = norm_layer == nn.InstanceNorm2d
+
+    if netD == 'n_layers':
+        dis_net = NLayerDiscriminator(input_nc, ndf, n_layers_D, norm_layer=norm_layer, use_bias=use_bias)
+    elif netD == 'pixel':
+        dis_net = PixelDiscriminator(input_nc, ndf, norm_layer=norm_layer, use_bias=use_bias)
+    else:
+        raise NotImplementedError('Discriminator model name [%s] is not recognized' % netD)
+
+    return init_network(dis_net, gpu_ids)
 
 

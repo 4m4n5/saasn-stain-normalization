@@ -1,7 +1,7 @@
 import functools
 import torch
 from torch import nn
-from ops import *
+from .ops import *
 
 
 class UnetGenerator(nn.Module):
