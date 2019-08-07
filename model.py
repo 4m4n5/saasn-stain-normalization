@@ -67,8 +67,8 @@ class cycleGAN(object):
         # Image transforms
         transform = transforms.Compose(
             [transforms.RandomHorizontalFlip(),
-             transforms.Resize((args.load_height,args.load_width)),
-             transforms.RandomCrop((args.crop_height,args.crop_width)),
+             transforms.Resize((args.load_height, args.load_width)),
+             transforms.RandomCrop((args.crop_height, args.crop_width)),
              transforms.ToTensor(),
              transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
             ])
