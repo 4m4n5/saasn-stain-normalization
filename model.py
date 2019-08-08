@@ -9,6 +9,7 @@ from torch.autograd import Variable
 import torchvision.datasets as dsets
 import torchvision.transforms as transforms
 import utils
+import test as tst
 
 from arch import *
 from torch.optim import lr_scheduler
@@ -43,11 +44,11 @@ class cycleGAN(object):
         self.d_lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.d_optimizer, lr_lambda=utils.LambdaLR(args.epochs, 0, args.decay_epoch).step)
         
         # Checkpoints
-        if not os.path.isdir(args.checkpoint_dir):
-            os.makedirs(args.checkpoint_dir)
+        if not os.path.isdir(args.checkpoint_path):
+            os.makedirs(args.checkpoint_path)
 
         try:
-            ckpt = utils.load_checkpoint('%s/latest.ckpt' % (args.checkpoint_dir))
+            ckpt = utils.load_checkpoint('%s/latest.ckpt' % (args.checkpoint_path))
             self.start_epoch = ckpt['epoch']
             self.Da.load_state_dict(ckpt['Da'])
             self.Db.load_state_dict(ckpt['Db'])
@@ -128,10 +129,11 @@ class cycleGAN(object):
                 b_fake_dis = self.Db(b_fake)
                 
                 # Label expected here is 1 to fool the discriminator
-                expected_label = utils.cuda(Variable(torch.ones(a_fake_dis.size())))
+                expected_label_a = utils.cuda(Variable(torch.ones(a_fake_dis.size())))
+                expected_label_b = utils.cuda(Variable(torch.ones(b_fake_dis.size())))
                 
-                a_gen_loss = self.MSE(a_fake_dis, expected_label)
-                b_gen_loss = self.MSE(b_fake_dis, expected_label)
+                a_gen_loss = self.MSE(a_fake_dis, expected_label_a)
+                b_gen_loss = self.MSE(b_fake_dis, expected_label_b)
                 
                 # Cycle Consistency loss
                 a_cycle_loss = self.L1(a_recon, a_real) * args.lamda
@@ -164,14 +166,17 @@ class cycleGAN(object):
                 b_fake_dis = self.Db(b_fake)
                 
                 # Expected label for real image is 1
-                exp_real_label = utils.cuda(Variable(torch.ones(a_real_dis.size())))
-                exp_fake_label = utils.cuda(Variable(torch.zeros(a_fake_dis.size())))
+                exp_real_label_a = utils.cuda(Variable(torch.ones(a_real_dis.size())))
+                exp_fake_label_a = utils.cuda(Variable(torch.zeros(a_fake_dis.size())))
+                
+                exp_real_label_b = utils.cuda(Variable(torch.ones(b_real_dis.size())))
+                exp_fake_label_b = utils.cuda(Variable(torch.zeros(b_fake_dis.size())))
                 
                 # Discriminator losses
-                a_real_dis_loss = self.MSE(a_real_dis, exp_real_label)
-                a_fake_dis_loss = self.MSE(a_fake_dis, exp_fake_label)
-                b_real_dis_loss = self.MSE(b_real_dis, exp_real_label)
-                b_fake_dis_loss = self.MSE(b_real_dis, exp_fake_label)
+                a_real_dis_loss = self.MSE(a_real_dis, exp_real_label_a)
+                a_fake_dis_loss = self.MSE(a_fake_dis, exp_fake_label_a)
+                b_real_dis_loss = self.MSE(b_real_dis, exp_real_label_b)
+                b_fake_dis_loss = self.MSE(b_fake_dis, exp_fake_label_b)
                 
                 # Total discriminator loss
                 a_dis_loss = (a_fake_dis_loss + a_real_dis_loss)/2
@@ -183,10 +188,11 @@ class cycleGAN(object):
                 
                 self.d_optimizer.step()
                 
-                print("Epoch: (%3d) (%5d/%5d) | Gen Loss:%.2e | Dis Loss:%.2e" % 
-                      (epoch, i + 1, min(len(a_loader), len(b_loader)), 
-                       gen_loss,a_dis_loss+b_dis_loss)
-                     )
+                if i % 10 == 0:
+                    print("Epoch: (%3d) (%5d/%5d) | Gen Loss:%.2e | Dis Loss:%.2e" % 
+                          (epoch, i + 1, min(len(a_loader), len(b_loader)), 
+                           gen_loss,a_dis_loss+b_dis_loss)
+                         )
             
             # Overwrite checkpoint
             utils.save_checkpoint({'epoch': epoch + 1,
@@ -197,11 +203,14 @@ class cycleGAN(object):
                                    'd_optimizer': self.d_optimizer.state_dict(),
                                    'g_optimizer': self.g_optimizer.state_dict()
                                   },
-                                  '%s/latest.ckpt' % (args.checkpoint_dir)
+                                  '%s/latest.ckpt' % (args.checkpoint_path)
                                  )
 
             # Update learning rates
             self.g_lr_scheduler.step()
             self.d_lr_scheduler.step()
-
-
+            
+            # Run one test cycle
+            if args.testing:
+                print('Testing')
+                tst.test(args, epoch)

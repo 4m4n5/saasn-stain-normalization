@@ -9,7 +9,7 @@ import utils
 from arch import define_Gen, define_Dis
 
 
-def test(args):
+def test(args, epoch):
     transform = transforms.Compose(
         [transforms.Resize((args.crop_height, args.crop_width)),
          transforms.ToTensor(),
@@ -24,19 +24,19 @@ def test(args):
     a_test_loader = torch.utils.data.DataLoader(a_test_data, batch_size=args.batch_size, shuffle=True, num_workers=4)
     b_test_loader = torch.utils.data.DataLoader(b_test_data, batch_size=args.batch_size, shuffle=True, num_workers=4)
 
-    Gab = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG='resnet_9blocks', norm=args.norm, 
-                                                    use_dropout= not args.no_dropout, gpu_ids=args.gpu_ids)
-    Gba = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG='resnet_9blocks', norm=args.norm, 
-                                                    use_dropout= not args.no_dropout, gpu_ids=args.gpu_ids)
+    Gab = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm, 
+                                                    use_dropout= args.use_dropout, gpu_ids=args.gpu_ids)
+    Gba = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm, 
+                                                    use_dropout= args.use_dropout, gpu_ids=args.gpu_ids)
 
     utils.print_networks([Gab,Gba], ['Gab','Gba'])
 
-    try:
-        ckpt = utils.load_checkpoint('%s/latest.ckpt' % (args.checkpoint_dir))
-        Gab.load_state_dict(ckpt['Gab'])
-        Gba.load_state_dict(ckpt['Gba'])
-    except:
-        print(' [*] No checkpoint!')
+
+    ckpt = utils.load_checkpoint('%s/latest.ckpt' % (args.checkpoint_path))
+    Gab.load_state_dict(ckpt['Gab'])
+    Gba.load_state_dict(ckpt['Gba'])
+#     except:
+#         print(' [*] No checkpoint!')
 
 
     """ run """
@@ -56,9 +56,9 @@ def test(args):
 
     pic = (torch.cat([a_real_test, b_fake_test, a_recon_test, b_real_test, a_fake_test, b_recon_test], dim=0).data + 1) / 2.0
 
-    if not os.path.isdir(args.results_dir):
-        os.makedirs(args.results_dir)
+    if not os.path.isdir(args.results_path):
+        os.makedirs(args.results_path)
 
-    torchvision.utils.save_image(pic, args.results_dir+'/sample.jpg', nrow=3)
+    torchvision.utils.save_image(pic, args.results_path+'/sample_' + str(epoch) + '.jpg', nrow=32)
 
 

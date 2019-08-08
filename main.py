@@ -1,7 +1,7 @@
 import os
 from argparse import ArgumentParser
 import model as md
-from utils import create_link
+from utils import create_link, mkdir
 import test as tst
 import warnings
 import torch
@@ -30,9 +30,9 @@ args = {
     'idt_coef': 0.5,
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/ss4yd/chrc_data_patches_1000/results/',
-    'dataset_dir': '/project/DSone/ss4yd/chrc_data_patches_1000/',
-    'checkpoint_dir': '/project/DSone/ss4yd/chrc_data_patches_1000/results/',
+    'results_dir': '/project/DSone/ss4yd/chrc_data_patches_1000_ke/results/',
+    'dataset_dir': '/project/DSone/ss4yd/chrc_data_patches_1000_ke/',
+    'checkpoint_dir': '/project/DSone/ss4yd/chrc_data_patches_1000_ke/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -42,6 +42,11 @@ args = {
 }
 
 args = Arguments(args)
+
+# Generate paths for checkpoint and results
+args.checkpoint_path = args.checkpoint_dir + str(args.gen_net) + '_' + str(args.dis_net) + '_' + str(args.lamda) + '_' + str(args.lr)
+args.results_path = args.results_dir + str(args.gen_net) + '_' + str(args.dis_net) + '_' + str(args.lamda) + '_' + str(args.lr)
+mkdir([args.checkpoint_path, args.results_path])
 
 
 # -
@@ -60,9 +65,7 @@ def main(args):
         
     if args.testing:
         print('Testing')
-        tst.test(args)
+        tst.test(args, 'last')
 
 
 main(args)
-
-
