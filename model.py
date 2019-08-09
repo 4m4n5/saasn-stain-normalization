@@ -22,12 +22,12 @@ class cycleGAN(object):
         
         # Set up both gens and discs
         self.Gab = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, 
-                              norm=args.norm, use_dropout=args.use_dropout, gpu_ids=args.gpu_ids)
+                              norm=args.norm, use_dropout=args.use_dropout, gpu_ids=args.gpu_ids, self_attn=args.self_attn, spectral = args.spectral)
         self.Gba = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, 
-                              norm=args.norm, use_dropout=args.use_dropout, gpu_ids=args.gpu_ids)
+                              norm=args.norm, use_dropout=args.use_dropout, gpu_ids=args.gpu_ids, self_attn=args.self_attn, spectral = args.spectral)
         
-        self.Da = define_Dis(input_nc=3, ndf=args.ndf, netD= args.dis_net, n_layers_D=3, norm=args.norm, gpu_ids=args.gpu_ids)
-        self.Db = define_Dis(input_nc=3, ndf=args.ndf, netD= args.dis_net, n_layers_D=3, norm=args.norm, gpu_ids=args.gpu_ids)
+        self.Da = define_Dis(input_nc=3, ndf=args.ndf, netD= args.dis_net, n_layers_D=3, norm=args.norm, gpu_ids=args.gpu_ids, spectral=args.spectral, self_attn=args.self_attn)
+        self.Db = define_Dis(input_nc=3, ndf=args.ndf, netD= args.dis_net, n_layers_D=3, norm=args.norm, gpu_ids=args.gpu_ids, spectral=args.spectral, self_attn=args.self_attn)
         
         utils.print_networks([self.Gab,self.Gba,self.Da,self.Db], ['Gab','Gba','Da','Db'])
         
