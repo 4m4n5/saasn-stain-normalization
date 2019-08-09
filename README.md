@@ -1,1 +1,1 @@
-# gan-stain-normalization
+# sagan-stain-normalization
