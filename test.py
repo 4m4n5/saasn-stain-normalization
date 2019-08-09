@@ -31,14 +31,15 @@ def test(args, epoch):
     b_test_loader = torch.utils.data.DataLoader(b_test_data, batch_size=args.batch_size, shuffle=True, num_workers=4)
 
     Gab = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm, 
-                                                    use_dropout= args.use_dropout, gpu_ids=args.gpu_ids)
+                                                    use_dropout= args.use_dropout, gpu_ids=args.gpu_ids, self_attn=args.self_attn, spectral = args.spectral)
     Gba = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm, 
-                                                    use_dropout= args.use_dropout, gpu_ids=args.gpu_ids)
+                                                    use_dropout= args.use_dropout, gpu_ids=args.gpu_ids, self_attn=args.self_attn, spectral = args.spectral)
     
     Da = define_Dis(input_nc=3, ndf=args.ndf, netD= args.dis_net, n_layers_D=3, norm=args.norm, 
-                         gpu_ids=args.gpu_ids)
+                         gpu_ids=args.gpu_ids, self_attn=args.self_attn, spectral=args.spectral)
     Db = define_Dis(input_nc=3, ndf=args.ndf, netD= args.dis_net, n_layers_D=3, norm=args.norm, 
-                         gpu_ids=args.gpu_ids)
+                         gpu_ids=args.gpu_ids, self_attn=args.self_attn, spectral=args.spectral)
+
 
 
     utils.print_networks([Gab,Gba], ['Gab','Gba'])
@@ -129,7 +130,7 @@ def test(args, epoch):
     if not os.path.isdir(args.results_path):
         os.makedirs(args.results_path)
 
-    torchvision.utils.save_image(pic, args.results_path+'/sample_' + str(epoch) + '.jpg', nrow=32)
+    torchvision.utils.save_image(pic, args.results_path+'/sample_' + str(epoch) + '.jpg', nrow=args.batch_size)
     
     return np.asarray(gen_a_losses), np.asarray(gen_b_losses), np.asarray(dis_a_losses), np.asarray(dis_b_losses)
 

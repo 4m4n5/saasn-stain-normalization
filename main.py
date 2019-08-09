@@ -19,13 +19,13 @@ class Arguments(object):
 args = {
     'epochs': 200,
     'decay_epoch': 100,
-    'batch_size': 32,
-    'lr': 0.00015,
-    'load_height': 256,
-    'load_width': 256,
+    'batch_size': 8,
+    'lr': 0.0002,
+    'load_height': 128,
+    'load_width': 128,
     'gpu_ids': '0',
-    'crop_height': 256,
-    'crop_width': 256,
+    'crop_height': 128,
+    'crop_width': 128,
     'lamda': 10,
     'idt_coef': 0.5,
     'training': True,
@@ -37,15 +37,25 @@ args = {
     'use_dropout': False,
     'ngf': 64,
     'ndf': 64,
-    'gen_net': 'unet_256',
-    'dis_net': 'n_layers'
+    'gen_net': 'unet_128',
+    'dis_net': 'n_layers',
+    'self_attn': True,
+    'spectral': True
 }
 
 args = Arguments(args)
 
+tag1 = ''
+if args.self_attn:
+    tag1 = 'attn'
+
+tag2 = ''
+if args.spectral:
+    tag2 = 'spectral'
+
 # Generate paths for checkpoint and results
-args.checkpoint_path = args.checkpoint_dir + str(args.gen_net) + '_' + str(args.dis_net) + '_' + str(args.lamda) + '_' + str(args.lr)
-args.results_path = args.results_dir + str(args.gen_net) + '_' + str(args.dis_net) + '_' + str(args.lamda) + '_' + str(args.lr)
+args.checkpoint_path = args.checkpoint_dir + str(args.gen_net) + '_' + str(args.dis_net) + '_' + str(args.lamda) + '_' + str(args.lr) + '_' + args.norm + '_' + tag1 + '_' + tag2 + str(args.batch_size) + str(args.load_height)
+args.results_path = args.results_dir + str(args.gen_net) + '_' + str(args.dis_net) + '_' + str(args.lamda) + '_' + str(args.lr) + '_' + args.norm + '_' + tag1 + '_' + tag2 + str(args.batch_size) + str(args.load_height)
 mkdir([args.checkpoint_path, args.results_path])
 
 
@@ -61,6 +71,7 @@ def main(args):
     if args.training:
         print('Training')
         model = md.cycleGAN(args)
+        print(model)
         model.train(args)
         
     if args.testing:
