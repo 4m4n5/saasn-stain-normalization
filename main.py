@@ -20,7 +20,7 @@ args = {
     'epochs': 200,
     'decay_epoch': 100,
     'batch_size': 32,
-    'lr': 0.0002,
+    'lr': 0.00015,
     'load_height': 256,
     'load_width': 256,
     'gpu_ids': '0',
