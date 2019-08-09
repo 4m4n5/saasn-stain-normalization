@@ -90,29 +90,38 @@ def init_network(net, gpu_ids=[]):
 
 
 def conv_norm_lrelu(in_dim, out_dim, kernel_size, stride=1, padding=0, 
-                    norm_layer = nn.BatchNorm2d, bias=False):
+                    norm_layer = nn.BatchNorm2d, bias=False, spectral=False):
+    if spectral:
+        return nn.Sequential(SpectralNorm(nn.Conv2d(in_dim, out_dim, kernel_size, stride, padding, bias=bias)), 
+                         norm_layer(out_dim), nn.LeakyReLU(0.2, True))
     return nn.Sequential(nn.Conv2d(in_dim, out_dim, kernel_size, stride, padding, bias=bias), 
                          norm_layer(out_dim), nn.LeakyReLU(0.2, True))
 
 
 def conv_norm_relu(in_dim, out_dim, kernel_size, stride=1, padding=0, 
-                    norm_layer = nn.BatchNorm2d, bias=False):
+                    norm_layer = nn.BatchNorm2d, bias=False, spectral=False):
+    if spectral:
+        return nn.Sequential(SpectralNorm(nn.Conv2d(in_dim, out_dim, kernel_size, stride, padding, bias=bias)), 
+                         norm_layer(out_dim), nn.ReLU(True))
     return nn.Sequential(nn.Conv2d(in_dim, out_dim, kernel_size, stride, padding, bias=bias), 
                          norm_layer(out_dim), nn.ReLU(True))
 
 
 def dconv_norm_relu(in_dim, out_dim, kernel_size, stride = 1, padding=0, output_padding=0,
-                    norm_layer = nn.BatchNorm2d, bias = False):
+                    norm_layer = nn.BatchNorm2d, bias = False, spectral=False):
+    if spectral:
+        return nn.Sequential(SpectralNorm(nn.ConvTranspose2d(in_dim, out_dim, kernel_size, stride, padding, output_padding, bias = bias)),
+                         norm_layer(out_dim), nn.ReLU(True))
     return nn.Sequential(nn.ConvTranspose2d(in_dim, out_dim, kernel_size, stride, padding, output_padding, bias = bias),
                          norm_layer(out_dim), nn.ReLU(True))
 
 
 class ResidualBlock(nn.Module):
-    def __init__(self, dim, norm_layer, use_dropout, use_bias):
+    def __init__(self, dim, norm_layer, use_dropout, use_bias, spectral):
         super(ResidualBlock, self).__init__()
         res_block = [nn.ReflectionPad2d(1),
                      conv_norm_relu(dim, dim, kernel_size=3,
-                                    norm_layer=norm_layer, bias=use_bias)]
+                                    norm_layer=norm_layer, bias=use_bias, spectral=spectral)]
         if use_dropout:
             res_block += [nn.Dropout(0.5)]
         res_block += [nn.ReflectionPad2d(1),

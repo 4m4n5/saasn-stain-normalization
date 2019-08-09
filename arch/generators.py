@@ -26,7 +26,7 @@ class UnetGenerator(nn.Module):
 
 
 class ResnetGenerator(nn.Module):
-    def __init__(self, input_nc=3, output_nc=3, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=True, num_blocks=6):
+    def __init__(self, input_nc=3, output_nc=3, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=True, num_blocks=6, spectral=False):
         super(ResnetGenerator, self).__init__()
         if type(norm_layer) == functools.partial:
             use_bias = norm_layer.func == nn.InstanceNorm2d
@@ -34,15 +34,15 @@ class ResnetGenerator(nn.Module):
             use_bias = norm_layer == nn.InstanceNorm2d
 
         res_model = [nn.ReflectionPad2d(3),
-                    conv_norm_relu(input_nc, ngf * 1, 7, norm_layer=norm_layer, bias=use_bias),
-                    conv_norm_relu(ngf * 1, ngf * 2, 3, 2, 1, norm_layer=norm_layer, bias=use_bias),
-                    conv_norm_relu(ngf * 2, ngf * 4, 3, 2, 1, norm_layer=norm_layer, bias=use_bias)]
+                    conv_norm_relu(input_nc, ngf * 1, 7, norm_layer=norm_layer, bias=use_bias, spectral=spectral),
+                    conv_norm_relu(ngf * 1, ngf * 2, 3, 2, 1, norm_layer=norm_layer, bias=use_bias, spectral=spectral),
+                    conv_norm_relu(ngf * 2, ngf * 4, 3, 2, 1, norm_layer=norm_layer, bias=use_bias, spectral=spectral)]
 
         for i in range(num_blocks):
-            res_model += [ResidualBlock(ngf * 4, norm_layer, use_dropout, use_bias)]
+            res_model += [ResidualBlock(ngf * 4, norm_layer, use_dropout, use_bias, spectral=spectral)]
 
-        res_model += [dconv_norm_relu(ngf * 4, ngf * 2, 3, 2, 1, 1, norm_layer=norm_layer, bias=use_bias),
-                      dconv_norm_relu(ngf * 2, ngf * 1, 3, 2, 1, 1, norm_layer=norm_layer, bias=use_bias),
+        res_model += [dconv_norm_relu(ngf * 4, ngf * 2, 3, 2, 1, 1, norm_layer=norm_layer, bias=use_bias, spectral=spectral),
+                      dconv_norm_relu(ngf * 2, ngf * 1, 3, 2, 1, 1, norm_layer=norm_layer, bias=use_bias, spectral=spectral),
                       nn.ReflectionPad2d(3),
                       nn.Conv2d(ngf, output_nc, 7),
                       nn.Tanh()]
@@ -56,9 +56,9 @@ def define_Gen(input_nc, output_nc, ngf, netG, norm='batch', use_dropout=False, 
     norm_layer = get_norm_layer(norm_type=norm)
     gen_net = None
     if netG == 'resnet_9blocks':
-        gen_net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, num_blocks=9)
+        gen_net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, num_blocks=9, spectral=spectral)
     elif netG == 'resnet_6blocks':
-        gen_net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, num_blocks=6)
+        gen_net = ResnetGenerator(input_nc, output_nc, ngf, norm_layer=norm_layer, use_dropout=use_dropout, num_blocks=6, spectral=spectral)
     elif netG == 'unet_128':
         gen_net = UnetGenerator(input_nc, output_nc, 7, ngf, norm_layer=norm_layer, use_dropout=use_dropout, self_attn=self_attn, spectral=spectral)
     elif netG == 'unet_256':
