@@ -19,13 +19,13 @@ class Arguments(object):
 args = {
     'epochs': 200,
     'decay_epoch': 100,
-    'batch_size': 8,
+    'batch_size': 32,
     'lr': 0.0002,
-    'load_height': 128,
-    'load_width': 128,
+    'load_height': 256,
+    'load_width': 256,
     'gpu_ids': '0',
-    'crop_height': 128,
-    'crop_width': 128,
+    'crop_height': 256,
+    'crop_width': 256,
     'lamda': 10,
     'idt_coef': 0.5,
     'training': True,
@@ -37,19 +37,19 @@ args = {
     'use_dropout': False,
     'ngf': 64,
     'ndf': 64,
-    'gen_net': 'unet_128',
+    'gen_net': 'unet_256',
     'dis_net': 'n_layers',
-    'self_attn': True,
-    'spectral': True
+    'self_attn': False,
+    'spectral': False
 }
 
 args = Arguments(args)
 
-tag1 = ''
+tag1 = 'noattn'
 if args.self_attn:
     tag1 = 'attn'
 
-tag2 = ''
+tag2 = 'nospec'
 if args.spectral:
     tag2 = 'spectral'
 
@@ -71,7 +71,6 @@ def main(args):
     if args.training:
         print('Training')
         model = md.cycleGAN(args)
-        print(model)
         model.train(args)
         
     if args.testing:

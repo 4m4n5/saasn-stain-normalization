@@ -64,17 +64,6 @@ class cycleGAN(object):
             
     
     def train(self, args):
-        # losses to plot
-        gen_a_losses_epoch = []
-        gen_b_losses_epoch = []
-        dis_a_losses_epoch = []
-        dis_b_losses_epoch = []
-        
-        test_gen_a_losses_epoch = []
-        test_gen_b_losses_epoch = []
-        test_dis_a_losses_epoch = []
-        test_dis_b_losses_epoch = []
-        
         # Image transforms
         transform = transforms.Compose(
             [transforms.RandomHorizontalFlip(),
@@ -100,11 +89,6 @@ class cycleGAN(object):
         for epoch in range(self.start_epoch, args.epochs):
             lr = self.g_optimizer.param_groups[0]['lr']
             print('learning rate = %.7f' % lr)
-            # losses for this epoch
-            gen_a_losses = []
-            gen_b_losses = []
-            dis_a_losses = []
-            dis_b_losses = []
             
             for i, (a_real, b_real) in enumerate(zip(a_loader, b_loader)):
                 
@@ -158,10 +142,6 @@ class cycleGAN(object):
                 a_cycle_loss = self.L1(a_recon, a_real) * args.lamda
                 b_cycle_loss = self.L1(b_recon, b_real) * args.lamda
                 
-                # Document losses
-                gen_a_losses.append([a_gen_loss, a_cycle_loss, a_idt_loss])
-                gen_b_losses.append([b_gen_loss, b_cycle_loss, b_idt_loss])
-                
                 # Total Generator Loss
                 gen_loss = a_gen_loss + b_gen_loss + a_cycle_loss + b_cycle_loss + a_idt_loss + b_idt_loss
                 
@@ -205,10 +185,6 @@ class cycleGAN(object):
                 a_dis_loss = (a_fake_dis_loss + a_real_dis_loss)/2
                 b_dis_loss = (b_fake_dis_loss + b_real_dis_loss)/2
                 
-                # Document losses
-                dis_a_losses.append([a_fake_dis_loss, a_real_dis_loss])
-                dis_b_losses.append([b_fake_dis_loss, b_real_dis_loss])
-                
                 # Update discriminators
                 a_dis_loss.backward()
                 b_dis_loss.backward()
@@ -233,17 +209,6 @@ class cycleGAN(object):
                                   '%s/latest.ckpt' % (args.checkpoint_path)
                                  )
             
-            # Compute and save loss values
-            gen_a_losses_epoch.append(np.mean(gen_a_losses, axis=0))
-            gen_b_losses_epoch.append(np.mean(gen_b_losses, axis=0))
-            dis_a_losses_epoch.append(np.mean(dis_a_losses, axis=0))
-            dis_b_losses_epoch.append(np.mean(dis_b_losses, axis=0))
-            
-            np.save(args.results_path + 'gen_a_adv_cycle_idt.npy', np.vstack(gen_a_losses_epoch))
-            np.save(args.results_path + 'gen_b_adv_cycle_idt.npy', np.vstack(gen_b_losses_epoch))
-            np.save(args.results_path + 'dis_a_fake_real.npy', np.vstack(dis_a_losses_epoch))
-            np.save(args.results_path + 'dis_b_fake_real.npy', np.vstack(dis_b_losses_epoch))
-
             # Update learning rates
             self.g_lr_scheduler.step()
             self.d_lr_scheduler.step()
@@ -251,14 +216,4 @@ class cycleGAN(object):
             # Run one test cycle
             if args.testing:
                 print('Testing')
-                a, b, c, d = tst.test(args, epoch)
-                
-                test_gen_a_losses_epoch.append(a)
-                test_gen_b_losses_epoch.append(b)
-                test_dis_a_losses_epoch.append(c)
-                test_dis_b_losses_epoch.append(d)
-                
-                np.save(args.results_path + 'test_gen_a_adv_cycle_idt.npy', np.vstack(test_gen_a_losses_epoch))
-                np.save(args.results_path + 'test_gen_b_adv_cycle_idt.npy', np.vstack(test_gen_b_losses_epoch))
-                np.save(args.results_path + 'test_dis_a_fake_real.npy', np.vstack(test_dis_a_losses_epoch))
-                np.save(args.results_path + 'test_dis_b_fake_real.npy', np.vstack(test_dis_b_losses_epoch))
+                tst.test(args, epoch)
