@@ -72,8 +72,8 @@ def test(args, epoch):
         
     # Both generators should be able to generate the image in its own domain 
     # give an input from its own domain
-    a_idt = self.Gab(a_real_test)
-    b_idt = self.Gba(b_real_test)
+    a_idt = Gab(a_real_test)
+    b_idt = Gba(b_real_test)
 
     # Identity loss
     a_idt_loss = L1(a_idt, a_real_test) * args.lamda * args.idt_coef
