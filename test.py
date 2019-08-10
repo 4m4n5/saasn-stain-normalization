@@ -63,6 +63,8 @@ def test(args, epoch):
 
     Gab.eval()
     Gba.eval()
+    Da.eval()
+    Db.eval()
 
     with torch.no_grad():
         a_fake_test = Gab(b_real_test)
