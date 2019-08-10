@@ -25,9 +25,9 @@ def test(args, epoch):
     b_test_loader = torch.utils.data.DataLoader(b_test_data, batch_size=args.batch_size, shuffle=True, num_workers=4)
 
     Gab = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm, 
-                                                    use_dropout= args.use_dropout, gpu_ids=args.gpu_ids)
+                                                    use_dropout= args.use_dropout, gpu_ids=args.gpu_ids, self_attn=args.self_attn, spectral = args.spectral)
     Gba = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm, 
-                                                    use_dropout= args.use_dropout, gpu_ids=args.gpu_ids)
+                                                    use_dropout= args.use_dropout, gpu_ids=args.gpu_ids, self_attn=args.self_attn, spectral = args.spectral)
 
     utils.print_networks([Gab,Gba], ['Gab','Gba'])
 
