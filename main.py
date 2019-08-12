@@ -39,8 +39,8 @@ args = {
     'ndf': 64,
     'gen_net': 'unet_128',
     'dis_net': 'n_layers',
-    'self_attn': True,
-    'spectral': True
+    'self_attn': False,
+    'spectral': False
 }
 
 args = Arguments(args)
