@@ -62,6 +62,6 @@ def test(args, epoch):
     if not os.path.isdir(args.results_path):
         os.makedirs(args.results_path)
 
-    torchvision.utils.save_image(pic, args.results_path+'/sample_' + str(epoch) + '_' + str(ba_ssim) + '_' + str(ab_ssim) + '.jpg', nrow=args.batch_size)
+    torchvision.utils.save_image(pic, args.results_path+'/sample_' + str(epoch) + '_' + str(round(ba_ssim.item(), 4)) + '_' + str(round(ab_ssim.item(), 4)) + '.jpg', nrow=args.batch_size)
 
 
