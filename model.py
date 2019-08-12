@@ -15,7 +15,7 @@ from arch import *
 from torch.optim import lr_scheduler
 
 # For MS-SSIM loss function
-import pytorch_msssim
+import msssim
 
 
 # -
