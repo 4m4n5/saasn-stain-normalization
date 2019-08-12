@@ -53,7 +53,7 @@ def test(args, epoch):
         a_recon_test = Gab(b_fake_test)
         b_recon_test = Gba(a_fake_test)
         # Calculate ssim loss
-        m = pytorch_msssim.MSSSIM()
+        m = msssim.MSSSIM()
         ba_ssim = m(a_real_test, b_fake_test)
         ab_ssim = m(b_real_test, a_fake_test)
 
