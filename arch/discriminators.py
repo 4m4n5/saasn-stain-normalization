@@ -23,10 +23,13 @@ class NLayerDiscriminator(nn.Module):
             
             if self_attn and ndf*nf_mult >=8:
                 self_attn_layer = Self_Attn(ndf*nf_mult)
-            
-            dis_model += [conv_norm_lrelu(ndf*nf_mult_prev, ndf*nf_mult, kernel_size=4, stride=2, 
-                                          norm_layer=norm_layer, padding=1, bias=use_bias, spectral=spectral), 
-                          self_attn_layer]
+                dis_model += [conv_norm_lrelu(ndf*nf_mult_prev, ndf*nf_mult, kernel_size=4, stride=2, 
+                                              norm_layer=norm_layer, padding=1, bias=use_bias, 
+                                              spectral=spectral), self_attn_layer]
+            else:
+                dis_model += [conv_norm_lrelu(ndf*nf_mult_prev, ndf*nf_mult, kernel_size=4, stride=2, 
+                                              norm_layer=norm_layer, padding=1, bias=use_bias, 
+                                              spectral=spectral)]
             
         nf_mult_prev = nf_mult
         nf_mult = min(2**n_layers, 8)

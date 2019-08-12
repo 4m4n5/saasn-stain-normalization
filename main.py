@@ -19,7 +19,7 @@ class Arguments(object):
 args = {
     'epochs': 200,
     'decay_epoch': 100,
-    'batch_size': 8,
+    'batch_size': 16,
     'lr': 0.0002,
     'load_height': 128,
     'load_width': 128,
@@ -45,18 +45,17 @@ args = {
 
 args = Arguments(args)
 
-tag1 = ''
+tag1 = 'noattn'
 if args.self_attn:
     tag1 = 'attn'
 
-tag2 = ''
+tag2 = 'nospec'
 if args.spectral:
     tag2 = 'spectral'
 
 # Generate paths for checkpoint and results
 args.checkpoint_path = args.checkpoint_dir + str(args.gen_net) + '_' + str(args.dis_net) + '_' + str(args.lamda) + '_' + str(args.lr) + '_' + args.norm + '_' + tag1 + '_' + tag2 + '_' + str(args.batch_size) + '_' + str(args.load_height)
 args.results_path = args.results_dir + str(args.gen_net) + '_' + str(args.dis_net) + '_' + str(args.lamda) + '_' + str(args.lr) + '_' + args.norm + '_' + tag1 + '_' + tag2 + '_' + str(args.batch_size) + '_' + str(args.load_height)
-mkdir([args.checkpoint_path, args.results_path])
 
 
 # -
@@ -71,7 +70,6 @@ def main(args):
     if args.training:
         print('Training')
         model = md.cycleGAN(args)
-        print(model)
         model.train(args)
         
     if args.testing:
