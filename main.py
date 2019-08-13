@@ -28,6 +28,7 @@ args = {
     'crop_width': 128,
     'lamda': 10,
     'idt_coef': 0.5,
+    'ssim_coef': 0.1,
     'training': True,
     'testing': True,
     'results_dir': '/project/DSone/ss4yd/chrc_data_patches_1000_ke/results/',
@@ -39,8 +40,8 @@ args = {
     'ndf': 64,
     'gen_net': 'unet_128',
     'dis_net': 'n_layers',
-    'self_attn': False,
-    'spectral': False
+    'self_attn': True,
+    'spectral': True
 }
 
 args = Arguments(args)
@@ -54,8 +55,13 @@ if args.spectral:
     tag2 = 'spectral'
 
 # Generate paths for checkpoint and results
-args.checkpoint_path = args.checkpoint_dir + str(args.gen_net) + '_' + str(args.dis_net) + '_' + str(args.lamda) + '_' + str(args.lr) + '_' + args.norm + '_' + tag1 + '_' + tag2 + '_' + str(args.batch_size) + '_' + str(args.load_height)
-args.results_path = args.results_dir + str(args.gen_net) + '_' + str(args.dis_net) + '_' + str(args.lamda) + '_' + str(args.lr) + '_' + args.norm + '_' + tag1 + '_' + tag2 + '_' + str(args.batch_size) + '_' + str(args.load_height)
+args.checkpoint_path = args.checkpoint_dir + str(args.gen_net) + '_' + str(args.dis_net) + '_' \
++ str(args.lamda) + '_' + str(args.lr) + '_' + args.norm + '_' + tag1 + '_' + tag2 + '_' \
++ str(args.batch_size) + '_' + str(args.load_height) + '_ssim_coef_' + str(args.ssim_coef)
+
+args.results_path = args.results_dir + str(args.gen_net) + '_' + str(args.dis_net) + '_' + \
+str(args.lamda) + '_' + str(args.lr) + '_' + args.norm + '_' + tag1 + '_' + tag2 + '_' + \
+str(args.batch_size) + '_' + str(args.load_height) + '_ssim_coef_' + str(args.ssim_coef)
 
 
 # -
