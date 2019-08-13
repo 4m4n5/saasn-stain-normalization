@@ -28,7 +28,7 @@ args = {
     'crop_width': 128,
     'lamda': 10,
     'idt_coef': 0.5,
-    'ssim_coef': 0.05,
+    'ssim_coef': 0.1,
     'training': True,
     'testing': True,
     'results_dir': '/project/DSone/ss4yd/chrc_data_patches_1000_ke/results/',
@@ -40,8 +40,8 @@ args = {
     'ndf': 64,
     'gen_net': 'unet_128',
     'dis_net': 'n_layers',
-    'self_attn': False,
-    'spectral': False
+    'self_attn': True,
+    'spectral': True
 }
 
 args = Arguments(args)
@@ -84,7 +84,3 @@ def main(args):
 
 
 main(args)
-
-round(torch.tensor(10.32325465464).item(), 2)
-
-
