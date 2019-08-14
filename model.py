@@ -17,7 +17,6 @@ from torch.optim import lr_scheduler
 # For MS-SSIM loss function
 import msssim
 import kornia
-
 # For live loss plot
 import hiddenlayer as hl
 
@@ -176,7 +175,7 @@ class cycleGAN(object):
                                 (self.msssim(a_fake_gray, b_recon_gray))) * args.lamda * args.ssim_coef 
                 ab_ssim_loss = ((self.msssim(b_real_gray, a_fake_gray)) + 
                                 (self.msssim(b_fake_gray, a_recon_gray))) * args.lamda * args.ssim_coef
-                
+              
                 # Total Generator Loss
                 gen_loss = a_gen_loss + b_gen_loss + a_cycle_loss + b_cycle_loss + a_idt_loss + b_idt_loss + ba_ssim_loss + ab_ssim_loss 
                 

@@ -44,6 +44,7 @@ args = {
     'spectral': False,
     'log_freq': 10,
     'custom_tag': 'livelosstest'
+
 }
 
 args = Arguments(args)
