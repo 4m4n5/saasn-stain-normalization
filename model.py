@@ -276,6 +276,15 @@ class cycleGAN(object):
                                   '%s/latest.ckpt' % (args.checkpoint_path)
                                  )
             
+            # Save loss history
+            history_path = args.results_path + '/loss_history/'
+            utils.mkdir([history_path])
+            Gab_history.save(history_path + "Gab.pkl")
+            Gba_history.save(history_path + "Gba.pkl")
+            Da_history.save(history_path + "Da.pkl")
+            Db_history.save(history_path + "Db.pkl")
+            gan_history.save(history_path + "gan.pkl")
+            
             # Update learning rates
             self.g_lr_scheduler.step()
             self.d_lr_scheduler.step()

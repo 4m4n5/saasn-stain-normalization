@@ -38,7 +38,7 @@ args = {
     'use_dropout': False,
     'ngf': 64,
     'ndf': 64,
-    'gen_net': 'unet_128',
+    'gen_net': 'unet_256',
     'dis_net': 'n_layers',
     'self_attn': False,
     'spectral': False,
@@ -57,13 +57,12 @@ if args.spectral:
     tag2 = 'spectral'
 
 # Generate paths for checkpoint and results
-args.checkpoint_path = args.checkpoint_dir + str(args.gen_net) + '_' + str(args.dis_net) + '_' \
-+ str(args.lamda) + '_' + str(args.lr) + '_' + args.norm + '_' + tag1 + '_' + tag2 + '_' \
-+ str(args.batch_size) + '_' + str(args.load_height) + '_ssim_coef_' + str(args.ssim_coef) + '_' + args.custom_tag
+args.identifier = str(args.gen_net) + '_' + str(args.dis_net) + '_' + str(args.lamda) + '_' \
++ str(args.lr) + '_' + args.norm + '_' + tag1 + '_' + tag2 + '_' + str(args.batch_size) + '_' \
++ str(args.load_height) + '_ssim_coef_' + str(args.ssim_coef) + '_' + args.custom_tag
 
-args.results_path = args.results_dir + str(args.gen_net) + '_' + str(args.dis_net) + '_' + \
-str(args.lamda) + '_' + str(args.lr) + '_' + args.norm + '_' + tag1 + '_' + tag2 + '_' + \
-str(args.batch_size) + '_' + str(args.load_height) + '_ssim_coef_' + str(args.ssim_coef) + '_' + args.custom_tag
+args.checkpoint_path = args.checkpoint_dir + args.identifier
+args.results_path = args.results_dir + args.identifier
 
 
 # -
