@@ -7,7 +7,7 @@ import torchvision.datasets as dsets
 import torchvision.transforms as transforms
 import utils
 from arch import define_Gen, define_Dis
-import msssim
+import kornia
 
 
 def test(args, epoch):
@@ -53,15 +53,14 @@ def test(args, epoch):
         a_recon_test = Gab(b_fake_test)
         b_recon_test = Gba(a_fake_test)
         # Calculate ssim loss
-        m = msssim.MSSSIM()
-        ba_ssim = m(a_real_test, b_fake_test)
-        ab_ssim = m(b_real_test, a_fake_test)
+        gray = kornia.color.RgbToGrayscale()
+        m = kornia.losses.SSIM(11, 'mean')
+        ba_ssim = m(gray((a_real_test + 1) / 2.0), gray((b_fake_test + 1) / 2.0))
+        ab_ssim = m(gray((b_real_test + 1) / 2.0), gray((a_fake_test + 1) / 2.0))
 
     pic = (torch.cat([a_real_test, b_fake_test, a_recon_test, b_real_test, a_fake_test, b_recon_test], dim=0).data + 1) / 2.0
 
     if not os.path.isdir(args.results_path):
         os.makedirs(args.results_path)
 
-    torchvision.utils.save_image(pic, args.results_path+'/sample_' + str(epoch) + '_' + str(round(ba_ssim.item(), 4)) + '_' + str(round(ab_ssim.item(), 4)) + '.jpg', nrow=args.batch_size)
-
-
+    torchvision.utils.save_image(pic, args.results_path+'/sample_' + str(epoch) + '_' + str(1 - 2*round(ba_ssim.item(), 4)) + '_' + str(1 - 2*round(ab_ssim.item(), 4)) + '.jpg', nrow=args.batch_size)

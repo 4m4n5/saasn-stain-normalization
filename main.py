@@ -17,33 +17,33 @@ class Arguments(object):
 
 # +
 args = {
-    'epochs': 200,
-    'decay_epoch': 100,
+    'epochs': 30,
+    'decay_epoch': 10,
     'batch_size': 16,
     'lr': 0.0002,
-    'load_height': 256,
-    'load_width': 256,
+    'load_height': 128,
+    'load_width': 128,
     'gpu_ids': '0',
-    'crop_height': 256,
-    'crop_width': 256,
+    'crop_height': 128,
+    'crop_width': 128,
     'lamda': 10,
     'idt_coef': 0.5,
     'ssim_coef': 0.1,
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/ss4yd/chrc_data_patches_1000_ke/results/',
-    'dataset_dir': '/project/DSone/ss4yd/chrc_data_patches_1000_ke/',
-    'checkpoint_dir': '/project/DSone/ss4yd/chrc_data_patches_1000_ke/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/500/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/500/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/500/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
     'ndf': 64,
-    'gen_net': 'unet_256',
+    'gen_net': 'unet_128',
     'dis_net': 'n_layers',
-    'self_attn': False,
-    'spectral': False,
-    'log_freq': 10,
-    'custom_tag': 'livelosstest'
+    'self_attn': True,
+    'spectral': True,
+    'log_freq': 20,
+    'custom_tag': ''
 
 }
 
