@@ -17,6 +17,8 @@ from torch.optim import lr_scheduler
 # For MS-SSIM loss function
 import msssim
 import kornia
+# For live loss plot
+import hiddenlayer as hl
 
 
 # -
@@ -88,6 +90,14 @@ class cycleGAN(object):
         a_fake_sample = utils.Sample_from_Pool()
         b_fake_sample = utils.Sample_from_Pool()
         
+        # live plot loss
+        Gab_history = hl.History()
+        Gba_history = hl.History()
+        gan_history = hl.History()
+        Da_history = hl.History()
+        Db_history = hl.History()
+        
+        canvas = hl.Canvas()
         
         for epoch in range(self.start_epoch, args.epochs):
             lr = self.g_optimizer.param_groups[0]['lr']
@@ -164,8 +174,8 @@ class cycleGAN(object):
                 ba_ssim_loss = ((self.msssim(a_real_gray, b_fake_gray)) + 
                                 (self.msssim(a_fake_gray, b_recon_gray))) * args.lamda * args.ssim_coef 
                 ab_ssim_loss = ((self.msssim(b_real_gray, a_fake_gray)) + 
-                                (self.msssim(b_fake_sample, a_recon_gray))) * args.lamda * args.ssim_coef
-            
+                                (self.msssim(b_fake_gray, a_recon_gray))) * args.lamda * args.ssim_coef
+              
                 # Total Generator Loss
                 gen_loss = a_gen_loss + b_gen_loss + a_cycle_loss + b_cycle_loss + a_idt_loss + b_idt_loss + ba_ssim_loss + ab_ssim_loss 
                 
@@ -215,11 +225,43 @@ class cycleGAN(object):
                 
                 self.d_optimizer.step()
                 
-                if i % 10 == 0:
+                if i % args.log_freq == 0:
+                    # Log losses
+                    Gab_history.log(step, gen_loss=a_gen_loss, cycle_loss=a_cycle_loss, 
+                                    idt_loss=a_idt_loss, ssim_loss=ab_ssim_loss)
+                    
+                    Gba_history.log(step, gen_loss=b_gen_loss, cycle_loss=b_cycle_loss, 
+                                    idt_loss=b_idt_loss, ssim_loss=ba_ssim_loss)
+                    
+                    Da_history.log(step, loss=a_dis_loss, fake_loss=a_fake_dis_loss, 
+                                   real_loss=a_real_dis_loss)
+                    
+                    Db_history.log(step, loss=b_dis_loss, fake_loss=b_fake_dis_loss, 
+                                   real_loss=b_real_dis_loss)
+                    
+                    gan_history.log(step, gen_loss=gen_loss, dis_loss=(a_dis_loss + b_dis_loss))
+                    
                     print("Epoch: (%3d) (%5d/%5d) | Gen Loss:%.2e | Dis Loss:%.2e" % 
                           (epoch, i + 1, min(len(a_loader), len(b_loader)), 
                            gen_loss,a_dis_loss+b_dis_loss)
                          )
+                    with canvas:
+                        canvas.draw_plot([Gba_history['gen_loss'], Gba_history['cycle_loss'], 
+                                          Gba_history['idt_loss'], Gba_history['ssim_loss']], 
+                                         labels=['Adv loss', 'Cycle loss', 'Identity loss', 'SSIM'])
+                        
+                        canvas.draw_plot([Gab_history['gen_loss'], Gab_history['cycle_loss'], 
+                                          Gab_history['idt_loss'], Gab_history['ssim_loss']], 
+                                         labels=['Adv loss', 'Cycle loss', 'Identity loss', 'SSIM'])
+                        
+                        canvas.draw_plot([Db_history['loss'], Db_history['fake_loss'], Db_history['real_loss']],
+                                         labels=['Loss', 'Fake Loss', 'Real Loss'])
+                        
+                        canvas.draw_plot([Da_history['loss'], Da_history['fake_loss'], Da_history['real_loss']],
+                                         labels=['Loss', 'Fake Loss', 'Real Loss'])
+                        
+                        canvas.draw_plot([gan_history['gen_loss'], gan_history['dis_loss']], 
+                                         labels=['Generator loss', 'Discriminator loss'])
             
             # Overwrite checkpoint
             utils.save_checkpoint({'epoch': epoch + 1,
@@ -232,6 +274,15 @@ class cycleGAN(object):
                                   },
                                   '%s/latest.ckpt' % (args.checkpoint_path)
                                  )
+            
+            # Save loss history
+            history_path = args.results_path + '/loss_history/'
+            utils.mkdir([history_path])
+            Gab_history.save(history_path + "Gab.pkl")
+            Gba_history.save(history_path + "Gba.pkl")
+            Da_history.save(history_path + "Da.pkl")
+            Db_history.save(history_path + "Db.pkl")
+            gan_history.save(history_path + "gan.pkl")
             
             # Update learning rates
             self.g_lr_scheduler.step()
