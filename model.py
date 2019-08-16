@@ -166,7 +166,6 @@ class cycleGAN(object):
                 b_fake_gray = gray((b_fake + 1) / 2.0)
                 b_recon_gray = gray((b_recon + 1) / 2.0)
             
-            
                 ba_ssim_loss = ((self.ssim(a_real_gray, b_fake_gray)) + 
                                 (self.ssim(a_fake_gray, b_recon_gray))) * args.lamda * args.ssim_coef 
                 ab_ssim_loss = ((self.ssim(b_real_gray, a_fake_gray)) + 

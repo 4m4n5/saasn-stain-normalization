@@ -42,7 +42,7 @@ args = {
     'dis_net': 'n_layers',
     'self_attn': True,
     'spectral': True,
-    'log_freq': 20,
+    'log_freq': 30,
     'custom_tag': ''
 
 }
