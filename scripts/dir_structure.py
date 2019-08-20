@@ -6,11 +6,11 @@ import random
 
 # +
 # Change this to folder which contains train and valid
-src_path = '/project/DSone/as3ek/data/ganstain/500/'
-target_path = '/project/DSone/as3ek/data/ganstain/500_gstain/'
+src_path = '/project/DSone/as3ek/data/patches/500/unnorm/'
+target_path = '/project/DSone/as3ek/data/ganstain/500_one_one/'
 dir_names = ['trainA', 'trainB', 'testA', 'testB']
 source_target_map = {'EE': 'A', 'Normal': 'B', 'train':'train', 'valid':'test'}
-two_domains_in_ee = True
+two_domains_in_ee = False
 
 os.mkdir(target_path)
 
@@ -40,6 +40,6 @@ for folder in os.listdir(src_path):
                 shutil.copy(src_path + folder + '/' + src + '/' + file, 
                             target_path + source_target_map[folder] + source_target_map[src] + '/' + file)
 
-len('34___2500_5750'.split('___')[0]
+len('34___2500_5750'.split('___')[0])
 
 

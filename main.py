@@ -6,6 +6,7 @@ import test as tst
 import warnings
 import torch
 warnings.filterwarnings('ignore')
+import gen_samples as gen_samples
 
 
 class Arguments(object):
@@ -17,8 +18,8 @@ class Arguments(object):
 
 # +
 args = {
-    'epochs': 30,
-    'decay_epoch': 10,
+    'epochs': 5,
+    'decay_epoch': 3,
     'batch_size': 16,
     'lr': 0.0002,
     'load_height': 128,
@@ -29,8 +30,8 @@ args = {
     'lamda': 10,
     'idt_coef': 0.5,
     'ssim_coef': 0.1,
-    'training': True,
-    'testing': True,
+    'training': False,
+    'testing': False,
     'results_dir': '/project/DSone/as3ek/data/ganstain/500/results/',
     'dataset_dir': '/project/DSone/as3ek/data/ganstain/500/',
     'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/500/checkpoint/',
@@ -43,7 +44,8 @@ args = {
     'self_attn': True,
     'spectral': True,
     'log_freq': 30,
-    'custom_tag': ''
+    'custom_tag': '',
+    'gen_samples': True
 
 }
 
@@ -80,9 +82,9 @@ def main(args):
         model = md.cycleGAN(args)
         model.train(args)
         
-    if args.testing:
-        print('Testing')
-        tst.test(args, 'last')
+    if args.gen_samples:
+        print('Generating samples')
+        gen_samples.gen_samples(args, 'last')
 
 
 main(args)

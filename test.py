@@ -39,28 +39,29 @@ def test(args, epoch):
 
 
     """ run """
-    a_real_test = Variable(iter(a_test_loader).next()[0], requires_grad=True)
-    b_real_test = Variable(iter(b_test_loader).next()[0], requires_grad=True)
-    a_real_test, b_real_test = utils.cuda([a_real_test, b_real_test])
-            
+    for i, (a_real_test, b_real_test) in enumerate(zip(a_test_loader, b_test_loader)):
+        a_real_test = Variable(iter(a_test_loader).next()[0], requires_grad=True)
+        b_real_test = Variable(iter(b_test_loader).next()[0], requires_grad=True)
+        a_real_test, b_real_test = utils.cuda([a_real_test, b_real_test])
 
-    Gab.eval()
-    Gba.eval()
 
-    with torch.no_grad():
-        a_fake_test = Gab(b_real_test)
-        b_fake_test = Gba(a_real_test)
-        a_recon_test = Gab(b_fake_test)
-        b_recon_test = Gba(a_fake_test)
-        # Calculate ssim loss
-        gray = kornia.color.RgbToGrayscale()
-        m = kornia.losses.SSIM(11, 'mean')
-        ba_ssim = m(gray((a_real_test + 1) / 2.0), gray((b_fake_test + 1) / 2.0))
-        ab_ssim = m(gray((b_real_test + 1) / 2.0), gray((a_fake_test + 1) / 2.0))
+        Gab.eval()
+        Gba.eval()
 
-    pic = (torch.cat([a_real_test, b_fake_test, a_recon_test, b_real_test, a_fake_test, b_recon_test], dim=0).data + 1) / 2.0
+        with torch.no_grad():
+            a_fake_test = Gab(b_real_test)
+            b_fake_test = Gba(a_real_test)
+            a_recon_test = Gab(b_fake_test)
+            b_recon_test = Gba(a_fake_test)
+            # Calculate ssim loss
+            gray = kornia.color.RgbToGrayscale()
+            m = kornia.losses.SSIM(11, 'mean')
+            ba_ssim = m(gray((a_real_test + 1) / 2.0), gray((b_fake_test + 1) / 2.0))
+            ab_ssim = m(gray((b_real_test + 1) / 2.0), gray((a_fake_test + 1) / 2.0))
 
-    if not os.path.isdir(args.results_path):
-        os.makedirs(args.results_path)
+        pic = (torch.cat([a_real_test, b_fake_test, a_recon_test, b_real_test, a_fake_test, b_recon_test], dim=0).data + 1) / 2.0
 
-    torchvision.utils.save_image(pic, args.results_path+'/sample_' + str(epoch) + '_' + str(1 - 2*round(ba_ssim.item(), 4)) + '_' + str(1 - 2*round(ab_ssim.item(), 4)) + '.jpg', nrow=args.batch_size)
+        if not os.path.isdir(args.results_path):
+            os.makedirs(args.results_path)
+
+        torchvision.utils.save_image(pic, args.results_path+'/sample_' + str(epoch) + '_' + str(1 - 2*round(ba_ssim.item(), 4)) + '_' + str(1 - 2*round(ab_ssim.item(), 4)) + '.jpg', nrow=args.batch_size)
