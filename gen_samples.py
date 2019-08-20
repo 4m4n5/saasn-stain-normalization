@@ -8,6 +8,7 @@ import torchvision.transforms as transforms
 import utils
 from arch import define_Gen, define_Dis
 import kornia
+import pandas as pd
 
 
 def gen_samples(args, epoch):
@@ -109,4 +110,7 @@ def gen_samples(args, epoch):
                     torchvision.utils.save_image(b_recon, image_path)
         
         df1 = pd.DataFrame(list(zip(a_names, ba_ssims)), columns =['Name', 'SSIM_A_to_B']) 
-        df2 = pd.DataFrame(list(zip(b_names, ab_ssims)), columns =['Name', 'SSIM_B_to_A']) 
+        df2 = pd.DataFrame(list(zip(b_names, ab_ssims)), columns =['Name', 'SSIM_B_to_A'])
+        
+        df1.to_csv(args.results_path + '/b_fake/' + 'SSIM_A_to_B.csv')
+        df2.to_csv(args.results_path + '/a_fake/' + 'SSIM_B_to_A.csv')
