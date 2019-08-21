@@ -76,8 +76,8 @@ def gen_samples(args, epoch):
                 ba_ssim = m(gray((a_real + 1) / 2.0), gray((b_fake + 1) / 2.0))
                 ab_ssim = m(gray((b_real + 1) / 2.0), gray((a_fake + 1) / 2.0))
                 
-                ab_ssims.append(ab_ssim)
-                ba_ssims.append(ba_ssim)
+                ab_ssims.append(ab_ssim.item())
+                ba_ssims.append(ba_ssim.item())
 
                 pic = (torch.cat([a_real_test, b_fake_test, a_recon_test, b_real_test, a_fake_test, b_recon_test], dim=0).data + 1) / 2.0
 
@@ -85,7 +85,7 @@ def gen_samples(args, epoch):
                 image_path = path + a_fnames[j][0].split('/')[-1]
                 if not os.path.isdir(path):
                     os.makedirs(path)
-                    torchvision.utils.save_image(b_fake, image_path)
+                torchvision.utils.save_image((b_fake.data + 1)/2.0, image_path)
                 
                 a_names.append(a_fnames[j][0].split('/')[-1])
                     
@@ -93,13 +93,13 @@ def gen_samples(args, epoch):
                 image_path = path + a_fnames[j][0].split('/')[-1]
                 if not os.path.isdir(path):
                     os.makedirs(path)
-                    torchvision.utils.save_image(a_recon, image_path)
+                torchvision.utils.save_image((a_recon.data + 1)/2.0, image_path)
                     
                 path = args.results_path + '/a_fake/'
                 image_path = path + b_fnames[j][0].split('/')[-1]
                 if not os.path.isdir(path):
                     os.makedirs(path)
-                    torchvision.utils.save_image(a_fake, image_path)
+                torchvision.utils.save_image((a_fake.data + 1)/2.0, image_path)
                 
                 b_names.append(b_fnames[j][0].split('/')[-1])
                     
@@ -107,7 +107,7 @@ def gen_samples(args, epoch):
                 image_path = path + b_fnames[j][0].split('/')[-1]
                 if not os.path.isdir(path):
                     os.makedirs(path)
-                    torchvision.utils.save_image(b_recon, image_path)
+                torchvision.utils.save_image((b_recon.data + 1)/2.0, image_path)
         
         df1 = pd.DataFrame(list(zip(a_names, ba_ssims)), columns =['Name', 'SSIM_A_to_B']) 
         df2 = pd.DataFrame(list(zip(b_names, ab_ssims)), columns =['Name', 'SSIM_B_to_A'])

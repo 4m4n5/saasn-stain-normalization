@@ -18,7 +18,7 @@ class Arguments(object):
 
 # +
 args = {
-    'epochs': 5,
+    'epochs': 10,
     'decay_epoch': 3,
     'batch_size': 16,
     'lr': 0.0002,
@@ -30,11 +30,11 @@ args = {
     'lamda': 10,
     'idt_coef': 0.5,
     'ssim_coef': 0.1,
-    'training': False,
-    'testing': False,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/500/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/500/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/500/checkpoint/',
+    'training': True,
+    'testing': True,
+    'results_dir': '/project/DSone/as3ek/data/ganstain/500_one_one/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/500_one_one/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/500_one_one/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -46,7 +46,6 @@ args = {
     'log_freq': 30,
     'custom_tag': '',
     'gen_samples': True
-
 }
 
 args = Arguments(args)
