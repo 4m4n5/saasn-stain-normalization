@@ -28,6 +28,8 @@ def create_link(dataset_dir):
     dirs['trainB'] = os.path.join(dataset_dir, 'ltrainB')
     dirs['testA'] = os.path.join(dataset_dir, 'ltestA')
     dirs['testB'] = os.path.join(dataset_dir, 'ltestB')
+    dirs['sampleA'] = os.path.join(dataset_dir, 'lsampleA')
+    dirs['sampleB'] = os.path.join(dataset_dir, 'lsampleB')
     mkdir(dirs.values())
 
     for key in dirs:
@@ -52,6 +54,12 @@ def get_testdata_link(dataset_dir):
     dirs = {}
     dirs['testA'] = os.path.join(dataset_dir, 'ltestA')
     dirs['testB'] = os.path.join(dataset_dir, 'ltestB')
+    return dirs
+
+def get_sampledata_link(dataset_dir):
+    dirs = {}
+    dirs['sampleA'] = os.path.join(dataset_dir, 'lsampleA')
+    dirs['sampleB'] = os.path.join(dataset_dir, 'lsampleB')
     return dirs
 
 

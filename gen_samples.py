@@ -64,8 +64,9 @@ def gen_samples(args, epoch):
             a_recon_test = Gab(b_fake_test)
             b_recon_test = Gba(a_fake_test)
             # Calculate ssim loss
-            
-            for j in range(args.batch_size):
+            b = a_real_test.size(0)
+            import pdb; pdb.set_trace()
+            for j in range(min(args.batch_size, b)):
                 a_real = a_real_test[j].unsqueeze(0)
                 b_fake = b_fake_test[j].unsqueeze(0)
                 a_recon = a_recon_test[j].unsqueeze(0)
@@ -114,3 +115,5 @@ def gen_samples(args, epoch):
         
         df1.to_csv(args.results_path + '/b_fake/' + 'SSIM_A_to_B.csv')
         df2.to_csv(args.results_path + '/a_fake/' + 'SSIM_B_to_A.csv')
+
+
