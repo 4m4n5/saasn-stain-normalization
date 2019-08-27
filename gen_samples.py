@@ -17,10 +17,17 @@ def gen_samples(args, epoch):
          transforms.ToTensor(),
          transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])])
 
-    dataset_dirs = utils.get_testdata_link(args.dataset_dir)
+    if args.specific_samples:
+        dataset_dirs = utils.get_sampledata_link(args.dataset_dir)
 
-    a_test_data = dsets.ImageFolder(dataset_dirs['testA'], transform=transform)
-    b_test_data = dsets.ImageFolder(dataset_dirs['testB'], transform=transform)
+        a_test_data = dsets.ImageFolder(dataset_dirs['sampleA'], transform=transform)
+        b_test_data = dsets.ImageFolder(dataset_dirs['sampleB'], transform=transform)
+    
+    else:
+        dataset_dirs = utils.get_testdata_link(args.dataset_dir)
+
+        a_test_data = dsets.ImageFolder(dataset_dirs['testA'], transform=transform)
+        b_test_data = dsets.ImageFolder(dataset_dirs['testB'], transform=transform)
 
 
     a_test_loader = torch.utils.data.DataLoader(a_test_data, batch_size=args.batch_size, shuffle=False, num_workers=4)
@@ -65,7 +72,7 @@ def gen_samples(args, epoch):
             b_recon_test = Gba(a_fake_test)
             # Calculate ssim loss
             b = a_real_test.size(0)
-            import pdb; pdb.set_trace()
+
             for j in range(min(args.batch_size, b)):
                 a_real = a_real_test[j].unsqueeze(0)
                 b_fake = b_fake_test[j].unsqueeze(0)

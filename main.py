@@ -18,8 +18,8 @@ class Arguments(object):
 
 # +
 args = {
-    'epochs': 5,
-    'decay_epoch': 3,
+    'epochs': 3,
+    'decay_epoch': 10,
     'batch_size': 16,
     'lr': 0.0002,
     'load_height': 256,
@@ -30,7 +30,7 @@ args = {
     'lamda': 10,
     'idt_coef': 0.05,
     'ssim_coef': 0.1,
-    'training': False,
+    'training': True,
     'testing': False,
     'results_dir': '/project/DSone/as3ek/data/ganstain/500_one_one/results/',
     'dataset_dir': '/project/DSone/as3ek/data/ganstain/500_one_one/',
@@ -44,8 +44,9 @@ args = {
     'self_attn': False,
     'spectral': False,
     'log_freq': 30,
-    'custom_tag': '',
-    'gen_samples': True
+    'custom_tag': 'paper',
+    'gen_samples': False,
+    'specific_samples': True
 }
 
 args = Arguments(args)
