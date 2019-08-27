@@ -35,8 +35,8 @@ class Arguments(object):
 
 # +
 args = {
-    'epochs': 5,
-    'decay_epoch': 3,
+    'epochs': 3,
+    'decay_epoch': 10,
     'batch_size': 16,
     'lr': 0.0002,
     'load_height': 256,
@@ -47,11 +47,11 @@ args = {
     'lamda': 10,
     'idt_coef': 0.05,
     'ssim_coef': 0.1,
-    'training': False,
+    'training': True,
     'testing': False,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/500/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/500/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/500/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/500_one_one/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/500_one_one/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/500_one_one/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -61,9 +61,9 @@ args = {
     'self_attn': False,
     'spectral': False,
     'log_freq': 30,
-    'custom_tag': '',
-    'gen_samples': True,
-    'specific_samples': True
+    'custom_tag': 'paper',
+    'gen_samples': False,
+    'specific_samples': False
 }
 
 args = Arguments(args)
@@ -100,7 +100,7 @@ ckpt = utils.load_checkpoint('%s/latest.ckpt' % (args.checkpoint_path))
 Gab.load_state_dict(ckpt['Gab'])
 Gba.load_state_dict(ckpt['Gba'])
 
-img = imread('/project/DSone/as3ek/data/ganstain/500_one_one/testB/N14-16_00___4750_1500.jpg')
+img = imread('/project/DSone/as3ek/data/ganstain/500/testA/130377_6729_001___3250_4500.jpg')
 Gab.eval()
 Gba.eval()
 print('Eval mode')
@@ -121,8 +121,15 @@ out_gab = Gab(image)
 
 out_gba = Gba(image)
 
-torchvision.utils.save_image(out_gba, '/scratch/as3ek/test.jpg')
+torchvision.utils.save_image((out_gba + 1)/2, '/scratch/as3ek/test.jpg')
 
-torchvision.utils.save_image(out_gab, '/scratch/as3ek/test.jpg')
+torchvision.utils.save_image((out_gab + 1)/2, '/scratch/as3ek/test2.jpg')
 
+gray = kornia.color.RgbToGrayscale()
+m = kornia.losses.SSIM(11, 'mean')
+ba_ssim = m(gray((image + 1) / 2.0), gray((out_gba + 1) / 2.0))
+ab_ssim = m(gray((image + 1) / 2.0), gray((out_gab + 1) / 2.0))
 
+1 - 2* ba_ssim
+
+1 - 2* ab_ssim
