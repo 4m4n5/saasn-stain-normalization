@@ -27,15 +27,15 @@ args = {
     'gpu_ids': '0',
     'crop_height': 128,
     'crop_width': 128,
-    'alpha': 5,
-    'beta': 2,
-    'gamma': 1,
-    'delta': 0.5,
+    'alpha': 5, # Cyc loss
+    'beta': 5, # Scyc loss
+    'gamma': 2, # Dssim loss 
+    'delta': 0.1, # Identity
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/500_one_one/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/500_one_one/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/500_one_one/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/500/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/500/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/500/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -44,8 +44,8 @@ args = {
     'dis_net': 'n_layers',
     'self_attn': True,
     'spectral': True,
-    'log_freq': 30,
-    'custom_tag': '',
+    'log_freq': 50,
+    'custom_tag': 'p100',
     'gen_samples': True,
     'specific_samples': False
 }

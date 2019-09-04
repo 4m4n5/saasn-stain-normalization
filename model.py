@@ -227,10 +227,10 @@ class cycleGAN(object):
                 if i % args.log_freq == 0:
                     # Log losses
                     Gab_history.log(step, gen_loss=a_gen_loss, cycle_loss=a_cycle_loss, 
-                                    idt_loss=a_idt_loss, ssim_loss=ab_ssim_loss)
+                                    idt_loss=a_idt_loss, ssim_loss=ab_ssim_loss, scyc_loss=a_scyc_loss)
                     
                     Gba_history.log(step, gen_loss=b_gen_loss, cycle_loss=b_cycle_loss, 
-                                    idt_loss=b_idt_loss, ssim_loss=ba_ssim_loss)
+                                    idt_loss=b_idt_loss, ssim_loss=ba_ssim_loss, scyc_loss=b_scyc_loss)
                     
                     Da_history.log(step, loss=a_dis_loss, fake_loss=a_fake_dis_loss, 
                                    real_loss=a_real_dis_loss)
@@ -246,12 +246,14 @@ class cycleGAN(object):
                          )
                     with canvas:
                         canvas.draw_plot([Gba_history['gen_loss'], Gba_history['cycle_loss'], 
-                                          Gba_history['idt_loss'], Gba_history['ssim_loss']], 
-                                         labels=['Adv loss', 'Cycle loss', 'Identity loss', 'SSIM'])
+                                          Gba_history['idt_loss'], Gba_history['ssim_loss'],
+                                          Gab_history['scyc_loss']], 
+                                         labels=['Adv loss', 'Cycle loss', 'Identity loss', 'SSIM', 'SCyC loss'])
                         
                         canvas.draw_plot([Gab_history['gen_loss'], Gab_history['cycle_loss'], 
-                                          Gab_history['idt_loss'], Gab_history['ssim_loss']], 
-                                         labels=['Adv loss', 'Cycle loss', 'Identity loss', 'SSIM'])
+                                          Gab_history['idt_loss'], Gab_history['ssim_loss'],
+                                          Gab_history['scyc_loss']], 
+                                         labels=['Adv loss', 'Cycle loss', 'Identity loss', 'SSIM', 'SCyC loss'])
                         
                         canvas.draw_plot([Db_history['loss'], Db_history['fake_loss'], Db_history['real_loss']],
                                          labels=['Loss', 'Fake Loss', 'Real Loss'])

@@ -3,6 +3,7 @@ import os
 from random import randint
 import shutil
 import random
+import pandas as pd
 
 # +
 # Change this to folder which contains train and valid
@@ -24,7 +25,7 @@ def ee_check(file, src, folder, two_domains_in_ee):
     if src != 'EE':
         return True
     else:
-        if len(file.split('___')[0]) != 2:
+        if len(file.split('___')[0].split('_')[0]) > 3:
             if domain_pakistan:
                 return False
             else:
@@ -43,3 +44,7 @@ for folder in os.listdir(src_path):
             if ee_check(file, src, folder, two_domains_in_ee):
                 shutil.copy(src_path + folder + '/' + src + '/' + file, 
                             target_path + source_target_map[folder] + source_target_map[src] + '/' + file)
+
+len(pd.Series(os.listdir(src_path + 'train/EE')).str.split('___').str[0].str.len() > 3)
+
+
