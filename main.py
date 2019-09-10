@@ -18,8 +18,8 @@ class Arguments(object):
 
 # +
 args = {
-    'epochs': 20,
-    'decay_epoch': 10,
+    'epochs': 30,
+    'decay_epoch': 25,
     'batch_size': 16,
     'lr': 0.0002,
     'load_height': 128,
