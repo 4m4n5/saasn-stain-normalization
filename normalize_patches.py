@@ -21,6 +21,7 @@ import skimage.transform
 import argparse
 from scipy.misc import imread, imresize
 from PIL import Image
+import random
 # -
 
 warnings.filterwarnings('ignore')
@@ -47,12 +48,12 @@ args = {
     'alpha': 5, # Cyc loss
     'beta': 5, # Scyc loss
     'gamma': 2, # Dssim loss 
-    'delta': 0.1, # Identity
+    'delta': 1, # Identity
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/500/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/500/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/500/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/1000_SEEM_Cinn/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/1000_SEEM_Cinn/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/1000_SEEM_Cinn/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -62,12 +63,21 @@ args = {
     'self_attn': True,
     'spectral': True,
     'log_freq': 50,
-    'custom_tag': 'p100',
+    'custom_tag': '',
     'gen_samples': True,
     'specific_samples': False
 }
 
 args = Arguments(args)
+
+
+# SOURCE AND TARGET FOLDERS
+source_path = '/project/DSone/as3ek/data/patches/1000/unnorm_seem_cinn/train/EE/'
+target_path = '/project/DSone/as3ek/data/patches/1000/gannorm_seem_cinn/train/EE/'
+train_valid_split = 0.8
+size = 256
+one_direction = True # If this is false. a -> b -> a will happen. Edit code for otherwise.
+gen_name = 'Gba' # Gba to generate b given a, i.e., a -> b
 
 tag1 = 'noattn'
 if args.self_attn:
@@ -93,43 +103,57 @@ for i in range(torch.cuda.device_count()):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # -
 
-Gab = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm, 
+if one_direction:
+    G = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm, 
                                                     use_dropout= args.use_dropout, gpu_ids=args.gpu_ids, self_attn=args.self_attn, spectral = args.spectral)
-Gba = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm, 
+else:
+    Gab = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm, 
+                                                        use_dropout= args.use_dropout, gpu_ids=args.gpu_ids, self_attn=args.self_attn, spectral = args.spectral)
+    Gba = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm, 
                                                     use_dropout= args.use_dropout, gpu_ids=args.gpu_ids, self_attn=args.self_attn, spectral = args.spectral)
 
 ckpt = utils.load_checkpoint('%s/latest.ckpt' % (args.checkpoint_path))
-Gab.load_state_dict(ckpt['Gab'])
-Gba.load_state_dict(ckpt['Gba'])
-
-img = imread('/project/DSone/as3ek/data/ganstain/500/testA/130377_6729_001___3250_4500.jpg')
-Gab.eval()
-Gba.eval()
+if one_direction:
+    G.load_state_dict(ckpt[gen_name])
+    G.eval()
+else:
+    Gab.load_state_dict(ckpt['Gab'])
+    Gba.load_state_dict(ckpt['Gba'])
+    Gab.eval()
+    Gba.eval()
 print('Eval mode')
 
-img = imresize(img, (256, 256))
-img = img.transpose(2, 0, 1)
-img = img / 255.
-img = torch.FloatTensor(img).to(device)
+# +
+biopsy_patch_no_map = {}
 
 transform = transforms.Compose([
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
 ])
 
-image = transform(img)
-image = image.unsqueeze(0)
-
-out_gab = Gab(image)
-
-out_gba = Gba(image)
-
-torchvision.utils.save_image((out_gba + 1)/2, '/scratch/as3ek/test.jpg')
-
-torchvision.utils.save_image((out_gab + 1)/2, '/scratch/as3ek/test2.jpg')
-
-gray = kornia.color.RgbToGrayscale()
-m = kornia.losses.SSIM(11, 'mean')
-ba_ssim = m(gray((image + 1) / 2.0), gray((out_gba + 1) / 2.0))
-ab_ssim = m(gray((image + 1) / 2.0), gray((out_gab + 1) / 2.0))
-
-
+for i, patch_name in enumerate(os.listdir(source_path)):
+    # Check if patch should be sent to valid for every patch from new patient
+    if patch_name.split('__')[0] not in biopsy_patch_no_map: 
+        biopsy_patch_no_map[patch_name.split('__')[0]] = 0
+        if random.randint(1, 10) > train_valid_split*10:
+            biopsy_target_path = target_path.replace('train', 'valid')
+        else:
+            biopsy_target_path = target_path
+    # Keeping track of number of patches per biopsy crop        
+    biopsy_patch_no_map[patch_name.split('__')[0]] += 1
+    
+    img = imread(source_path + patch_name)
+    img = imresize(img, (size, size))
+    img = img.transpose(2, 0, 1)
+    img = img / 255.
+    img = torch.FloatTensor(img).to(device)
+    image = transform(img)
+    image = image.unsqueeze(0)
+    if one_direction:
+        out = G(image)
+    else:
+        out = Gba(image)
+        out = Gab(out)
+    
+    torchvision.utils.save_image((out + 1)/2, biopsy_target_path + patch_name)
+    if i % 1000 == 0:
+        print(i)
