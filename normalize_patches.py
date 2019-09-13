@@ -79,6 +79,9 @@ size = 256
 one_direction = True # If this is false. a -> b -> a will happen. Edit code for otherwise.
 gen_name = 'Gba' # Gba to generate b given a, i.e., a -> b
 
+if not os.path.exists(target_path):
+    os.makedirs(target_path)
+
 tag1 = 'noattn'
 if args.self_attn:
     tag1 = 'attn'
@@ -125,6 +128,7 @@ print('Eval mode')
 
 # +
 biopsy_patch_no_map = {}
+biopsy_target_map = {}
 
 transform = transforms.Compose([
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
@@ -135,9 +139,9 @@ for i, patch_name in enumerate(os.listdir(source_path)):
     if patch_name.split('__')[0] not in biopsy_patch_no_map: 
         biopsy_patch_no_map[patch_name.split('__')[0]] = 0
         if random.randint(1, 10) > train_valid_split*10:
-            biopsy_target_path = target_path.replace('train', 'valid')
+            biopsy_target_map[patch_name.split('__')[0]] = 'train'
         else:
-            biopsy_target_path = target_path
+            biopsy_target_map[patch_name.split('__')[0]] = 'valid'
     # Keeping track of number of patches per biopsy crop        
     biopsy_patch_no_map[patch_name.split('__')[0]] += 1
     
@@ -153,7 +157,12 @@ for i, patch_name in enumerate(os.listdir(source_path)):
     else:
         out = Gba(image)
         out = Gab(out)
-    
+    biopsy_target_path = target_path.replace('train', biopsy_target_map[patch_name.split('__')[0]])
     torchvision.utils.save_image((out + 1)/2, biopsy_target_path + patch_name)
     if i % 1000 == 0:
         print(i)
+# -
+
+os.listdir(source_path)[0].split('__')
+
+
