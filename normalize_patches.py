@@ -17,7 +17,6 @@ import numpy as np
 import json
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-import skimage.transform
 import argparse
 from scipy.misc import imread, imresize
 from PIL import Image
@@ -45,15 +44,15 @@ args = {
     'gpu_ids': '0',
     'crop_height': 128,
     'crop_width': 128,
-    'alpha': 5, # Cyc loss
+    'alpha': 6, # Cyc loss
     'beta': 5, # Scyc loss
     'gamma': 2, # Dssim loss 
-    'delta': 1, # Identity
+    'delta': 0.1, # Identity
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/1000_SEEM_Cinn/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/1000_SEEM_Cinn/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/1000_SEEM_Cinn/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/zif_cinn/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/zif_cinn/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/zif_cinn/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -63,7 +62,7 @@ args = {
     'self_attn': True,
     'spectral': True,
     'log_freq': 50,
-    'custom_tag': '',
+    'custom_tag': 'zif_cinn',
     'gen_samples': True,
     'specific_samples': False
 }
@@ -72,12 +71,13 @@ args = Arguments(args)
 
 
 # SOURCE AND TARGET FOLDERS
-source_path = '/project/DSone/as3ek/data/patches/1000/unnorm_seem_cinn/train/EE/'
-target_path = '/project/DSone/as3ek/data/patches/1000/gannorm_seem_cinn/train/EE/'
+source_path = '/project/DSone/as3ek/data/ganstain/seem_zif/trainB/'
+target_path = '/project/DSone/as3ek/data/patches/1000/gannorm_'
 train_valid_split = 0.8
 size = 256
 one_direction = True # If this is false. a -> b -> a will happen. Edit code for otherwise.
 gen_name = 'Gba' # Gba to generate b given a, i.e., a -> b
+folder_to_folder = True
 
 if not os.path.exists(target_path):
     os.makedirs(target_path)
@@ -135,15 +135,16 @@ transform = transforms.Compose([
 ])
 
 for i, patch_name in enumerate(os.listdir(source_path)):
-    # Check if patch should be sent to valid for every patch from new patient
-    if patch_name.split('__')[0] not in biopsy_patch_no_map: 
-        biopsy_patch_no_map[patch_name.split('__')[0]] = 0
-        if random.randint(1, 10) > train_valid_split*10:
-            biopsy_target_map[patch_name.split('__')[0]] = 'train'
-        else:
-            biopsy_target_map[patch_name.split('__')[0]] = 'valid'
-    # Keeping track of number of patches per biopsy crop        
-    biopsy_patch_no_map[patch_name.split('__')[0]] += 1
+    if not folder_to_folder:
+        # Check if patch should be sent to valid for every patch from new patient
+        if patch_name.split('__')[0] not in biopsy_patch_no_map: 
+            biopsy_patch_no_map[patch_name.split('__')[0]] = 0
+            if random.randint(1, 10) > train_valid_split*10:
+                biopsy_target_map[patch_name.split('__')[0]] = 'train'
+            else:
+                biopsy_target_map[patch_name.split('__')[0]] = 'valid'
+        # Keeping track of number of patches per biopsy crop        
+        biopsy_patch_no_map[patch_name.split('__')[0]] += 1
     
     img = imread(source_path + patch_name)
     img = imresize(img, (size, size))
@@ -157,8 +158,12 @@ for i, patch_name in enumerate(os.listdir(source_path)):
     else:
         out = Gba(image)
         out = Gab(out)
-    biopsy_target_path = target_path.replace('train', biopsy_target_map[patch_name.split('__')[0]])
-    torchvision.utils.save_image((out + 1)/2, biopsy_target_path + patch_name)
+    if not folder_to_folder:
+        biopsy_target_path = target_path.replace('train', biopsy_target_map[patch_name.split('__')[0]])
+        torchvision.utils.save_image((out + 1)/2, biopsy_target_path + patch_name)
+    else:
+        biopsy_target_path = target_path
+        torchvision.utils.save_image((out + 1)/2, biopsy_target_path + patch_name)
     if i % 1000 == 0:
         print(i)
 # -

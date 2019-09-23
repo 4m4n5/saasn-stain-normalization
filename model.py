@@ -263,7 +263,7 @@ class cycleGAN(object):
                         
                         canvas.draw_plot([gan_history['gen_loss'], gan_history['dis_loss']], 
                                          labels=['Generator loss', 'Discriminator loss'])
-            
+                
             # Overwrite checkpoint
             utils.save_checkpoint({'epoch': epoch + 1,
                                    'Da': self.Da.state_dict(),
@@ -293,3 +293,5 @@ class cycleGAN(object):
             if args.testing:
                 print('Testing')
                 tst.test(args, epoch)
+
+

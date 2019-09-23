@@ -18,8 +18,8 @@ class Arguments(object):
 
 # +
 args = {
-    'epochs': 30,
-    'decay_epoch': 25,
+    'epochs': 10,
+    'decay_epoch': 9,
     'batch_size': 16,
     'lr': 0.0002,
     'load_height': 128,
@@ -27,15 +27,15 @@ args = {
     'gpu_ids': '0',
     'crop_height': 128,
     'crop_width': 128,
-    'alpha': 5, # Cyc loss
+    'alpha': 6, # Cyc loss
     'beta': 5, # Scyc loss
     'gamma': 2, # Dssim loss 
     'delta': 0.1, # Identity
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/500/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/500/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/500/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/vsi_zif/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/vsi_zif/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/vsi_zif/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -45,9 +45,10 @@ args = {
     'self_attn': True,
     'spectral': True,
     'log_freq': 50,
-    'custom_tag': 'p100',
-    'gen_samples': True,
-    'specific_samples': False
+    'custom_tag': 'zif_cinn',
+    'gen_samples': False,
+    'specific_samples': False,
+    'continue_epoch': 1
 }
 
 args = Arguments(args)
