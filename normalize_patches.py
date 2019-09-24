@@ -35,8 +35,8 @@ class Arguments(object):
 
 # +
 args = {
-    'epochs': 30,
-    'decay_epoch': 25,
+    'epochs': 10,
+    'decay_epoch': 9,
     'batch_size': 16,
     'lr': 0.0002,
     'load_height': 128,
@@ -50,9 +50,9 @@ args = {
     'delta': 0.1, # Identity
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/zif_cinn/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/zif_cinn/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/zif_cinn/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/vsi_zif/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/vsi_zif/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/vsi_zif/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -62,21 +62,22 @@ args = {
     'self_attn': True,
     'spectral': True,
     'log_freq': 50,
-    'custom_tag': 'zif_cinn',
-    'gen_samples': True,
+    'custom_tag': 'double_normalization',
+    'gen_samples': False,
     'specific_samples': False
 }
+
 
 args = Arguments(args)
 
 
 # SOURCE AND TARGET FOLDERS
-source_path = '/project/DSone/as3ek/data/ganstain/seem_zif/trainB/'
-target_path = '/project/DSone/as3ek/data/patches/1000/gannorm_'
-train_valid_split = 0.8
+source_path = '/project/DSone/as3ek/data/patches/1000/gan_normalized/cinn_normal_zif/'
+target_path = '/project/DSone/as3ek/data/patches/1000/gan_normalized/cinn_normal_zif_dn_seem/'
+train_valid_split = 1
 size = 256
 one_direction = True # If this is false. a -> b -> a will happen. Edit code for otherwise.
-gen_name = 'Gba' # Gba to generate b given a, i.e., a -> b
+gen_name = 'Gab' # Gba to generate b given a, i.e., a -> b
 folder_to_folder = True
 
 if not os.path.exists(target_path):

@@ -45,7 +45,7 @@ args = {
     'self_attn': True,
     'spectral': True,
     'log_freq': 50,
-    'custom_tag': 'zif_cinn',
+    'custom_tag': 'double_normalization',
     'gen_samples': False,
     'specific_samples': False,
     'continue_epoch': 1
