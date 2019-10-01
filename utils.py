@@ -1,9 +1,48 @@
 # -*- coding: utf-8 -*-
+# + {}
 import copy
 import os
 import shutil
 import numpy as np
 import torch
+
+from skimage.color import rgb2gray
+from skimage.feature import canny
+from skimage.morphology import binary_closing, binary_dilation, disk
+from scipy.ndimage.morphology import binary_fill_holes
+
+
+# -
+
+# Arguments
+class Arguments(object):
+    def __init__(self, dictionary):
+        """Constructor"""
+        for key in dictionary:
+            setattr(self, key, dictionary[key])
+
+
+def process_args(args):
+    tag1 = 'noattn'
+    if args.self_attn:
+        tag1 = 'attn'
+
+    tag2 = 'nospec'
+    if args.spectral:
+        tag2 = 'spectral'
+
+    # Generate paths for checkpoint and results
+    args.identifier = str(args.gen_net) + '_' + str(args.dis_net) + '_' + str(args.lr) + '_' + args.norm + '_'\
+    + tag1 + '_' + tag2 + '_' + str(args.batch_size) + '_' + str(args.load_height) + '_coefs_' + str(args.alpha)\
+    + '_' + str(args.beta) + '_' + str(args.gamma) + '_'+ str(args.delta) + '_' + args.custom_tag
+
+    args.checkpoint_path = args.checkpoint_dir + args.identifier
+
+    args.gpu_ids = []
+    for i in range(torch.cuda.device_count()):
+        args.gpu_ids.append(i)
+    
+    return args
 
 
 # Make directories
@@ -123,3 +162,55 @@ def print_networks(nets, names):
         print('[Network %s] Total number of parameters : %.3f M' % (names[i], num_params / 1e6))
         i=i+1
     print('-----------------------------------------------')
+
+
+# +
+def optical_density(tile):
+    tile = tile.astype(np.float64)
+
+    od = -np.log((tile+1)/240)
+    return od
+
+def keep_tile(tile_tuple, tile_size, tissue_threshold):
+    slide_num, tile = tile_tuple
+    if tile.shape[0:2] == (tile_size, tile_size):
+        tile_orig = tile
+        tile = rgb2gray(tile)
+        # 8-bit depth complement, from 1 (dense tissue)
+        # to 0 (plain background).
+        tile = 1 - tile
+        # Canny edge detection with hysteresis thresholding.
+        # This returns a binary map of edges, with 1 equal to
+        # an edge. The idea is that tissue would be full of
+        # edges, while background would not.
+        tile = canny(tile)
+        # Binary closing, which is a dilation followed by
+        # an erosion. This removes small dark spots, which
+        # helps remove noise in the background.
+        tile = binary_closing(tile, disk(10))
+        # Binary dilation, which enlarges bright areas,
+        # and shrinks dark areas. This helps fill in holes
+        # within regions of tissue.
+        tile = binary_dilation(tile, disk(10))
+        # Fill remaining holes within regions of tissue.
+        tile = binary_fill_holes(tile)
+        # Calculate percentage of tissue coverage.
+        percentage = tile.mean()
+        check1 = percentage >= tissue_threshold
+
+        # Check 2
+        # Convert to optical density values
+        tile = optical_density(tile_orig)
+        # Threshold at beta
+        beta = 0.15
+        tile = np.min(tile, axis=2) >= beta
+        # Apply morphology for same reasons as above.
+        tile = binary_closing(tile, disk(2))
+        tile = binary_dilation(tile, disk(2))
+        tile = binary_fill_holes(tile)
+        percentage = tile.mean()
+        check2 = percentage >= tissue_threshold
+
+        return check1 and check2
+    else:
+        return False
