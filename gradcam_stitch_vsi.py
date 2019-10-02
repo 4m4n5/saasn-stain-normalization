@@ -122,7 +122,7 @@ def data_learner_init(PATH, sz, tfms, normalize_stats, model_load_name):
 patch_size = 1000
 target_size = 256
 target = '/scratch/as3ek/misc/gradcams_seem_vsi/' # for Gradcam WSI
-thresh = 0
+thresh = 0 # %-age tissue coverrage cutoff
 overlap = 0 # %-age area
 
 # Stain Normalization Parameters
@@ -302,3 +302,5 @@ for i, file_path in enumerate(files):
 
     print(str(i + 1) + '/' + str(num_files) + ' Complete!')
 
+
+# %%
