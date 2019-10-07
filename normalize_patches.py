@@ -18,7 +18,6 @@ import json
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import argparse
-from scipy.misc import imread, imresize
 from PIL import Image
 import random
 # -
@@ -37,7 +36,7 @@ class Arguments(object):
 args = {
     'epochs': 10,
     'decay_epoch': 9,
-    'batch_size': 16,
+    'batch_size': 4,
     'lr': 0.0002,
     'load_height': 128,
     'load_width': 128,
@@ -50,9 +49,9 @@ args = {
     'delta': 0.1, # Identity
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/vsi_zif/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/vsi_zif/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/vsi_zif/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi_svs/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi_svs/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi_svs/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -62,7 +61,7 @@ args = {
     'self_attn': True,
     'spectral': True,
     'log_freq': 50,
-    'custom_tag': 'double_normalization',
+    'custom_tag': 'vsi_svs',
     'gen_samples': False,
     'specific_samples': False
 }
@@ -72,12 +71,12 @@ args = Arguments(args)
 
 
 # SOURCE AND TARGET FOLDERS
-source_path = '/project/DSone/as3ek/data/patches/1000/gan_normalized/cinn_normal_zif/'
-target_path = '/project/DSone/as3ek/data/patches/1000/gan_normalized/cinn_normal_zif_dn_seem/'
+source_path = '/project/DSone/as3ek/data/patches/1000/un_normalized/run2/cinn_normal_svs/'
+target_path = '/project/DSone/as3ek/data/patches/1000/gan_normalized/run2/cinn_normal_svs/'
 train_valid_split = 1
 size = 256
-one_direction = True # If this is false. a -> b -> a will happen. Edit code for otherwise.
-gen_name = 'Gab' # Gba to generate b given a, i.e., a -> b
+one_direction = False # If this is false. b -> a -> b will happen. Edit code for otherwise.
+gen_name = 'Gba' # Gba to generate b given a, i.e., a -> b
 folder_to_folder = True
 
 if not os.path.exists(target_path):
@@ -147,8 +146,10 @@ for i, patch_name in enumerate(os.listdir(source_path)):
         # Keeping track of number of patches per biopsy crop        
         biopsy_patch_no_map[patch_name.split('__')[0]] += 1
     
-    img = imread(source_path + patch_name)
-    img = imresize(img, (size, size))
+    img = Image.open(source_path + patch_name)
+    img = img.convert('RGB')
+    img = img.resize((size, size))
+    img = np.array(img)
     img = img.transpose(2, 0, 1)
     img = img / 255.
     img = torch.FloatTensor(img).to(device)
@@ -157,8 +158,8 @@ for i, patch_name in enumerate(os.listdir(source_path)):
     if one_direction:
         out = G(image)
     else:
-        out = Gba(image)
-        out = Gab(out)
+        out = Gab(image)
+        out = Gba(out)
     if not folder_to_folder:
         biopsy_target_path = target_path.replace('train', biopsy_target_map[patch_name.split('__')[0]])
         torchvision.utils.save_image((out + 1)/2, biopsy_target_path + patch_name)

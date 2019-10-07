@@ -12,7 +12,6 @@ import torchvision
 import torchvision.transforms as transforms
 
 # Image functions
-from scipy.misc import imread, imresize
 from PIL import Image
 from scipy.ndimage.morphology import binary_fill_holes
 from skimage.color import rgb2gray
@@ -25,8 +24,6 @@ from arch import define_Gen
 
 
 # %%
-
-
 def optical_density(tile):
     tile = tile.astype(np.float64)
 
@@ -100,14 +97,10 @@ def keep_tile(tile_tuple, tile_size, tissue_threshold):
 
 
 # %%
-
-
 warnings.filterwarnings('ignore')
 
 
 # %%
-
-
 class Arguments(object):
     def __init__(self, dictionary):
         """Constructor"""
@@ -116,12 +109,10 @@ class Arguments(object):
 
 
 # %%
-
-
 args = {
-    'epochs': 100,
-    'decay_epoch': 60,
-    'batch_size': 16,
+    'epochs': 50,
+    'decay_epoch': 40,
+    'batch_size': 4,
     'lr': 0.0002,
     'load_height': 128,
     'load_width': 128,
@@ -134,9 +125,9 @@ args = {
     'delta': 0.1, # Identity
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/zif_cinn/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/zif_cinn/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/zif_cinn/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/run2/zif_svs/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/run2/zif_svs/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/run2/zif_svs/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -146,8 +137,8 @@ args = {
     'self_attn': True,
     'spectral': True,
     'log_freq': 50,
-    'custom_tag': 'zif_cinn',
-    'gen_samples': True,
+    'custom_tag': 'vsi_svs',
+    'gen_samples': False,
     'specific_samples': False
 }
 
@@ -175,8 +166,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # %%
-
-
 # Parameters
 one_direction = False # If this is false. b -> a -> b will happen. Edit code for otherwise.
 gen_name = 'Gba' # Gba to generate b given a, i.e., a -> b
@@ -184,16 +173,14 @@ PATH = '/project/DSone/biopsy_images/duodenum/cincinnati_celiac_normal/Cincinnat
 patch_size = 1000
 resize_to = 256
 target = '/scratch/as3ek/misc/gannorm_wsi_cinn_svs/' # for WSI
-target_path_unnorm = '/project/DSone/as3ek/data/patches/1000/un_normalized/cinn_normal_svs/' # for unnormalized patches
-target_path = '/project/DSone/as3ek/data/patches/1000/gan_normalized/cinn_normal_svs/' # for normalized patches
+target_path_unnorm = '/project/DSone/as3ek/data/patches/1000/un_normalized/run2/cinn_normal_svs/' # for unnormalized patches
+target_path = '/project/DSone/as3ek/data/patches/1000/gan_normalized/run2/cinn_normal_svs/' # for normalized patches
 thresh = 0.50
 save_WSI = True
 overlap = 0.5 # %-age area
 
 
 # %%
-
-
 if one_direction:
     G = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm, 
                                                     use_dropout= args.use_dropout, gpu_ids=args.gpu_ids, self_attn=args.self_attn, spectral = args.spectral)
@@ -205,8 +192,6 @@ else:
 
 
 # %%
-
-
 ckpt = utils.load_checkpoint('%s/latest.ckpt' % (args.checkpoint_path))
 if one_direction:
     G.load_state_dict(ckpt[gen_name])
@@ -220,8 +205,6 @@ print('Eval mode')
 
 
 # %%
-
-
 transform = transforms.Compose([
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
 ])
@@ -245,7 +228,8 @@ for i, file in enumerate(os.listdir(PATH)):
             patch = image.read_region((x_cord, y_cord), 0, (patch_size, patch_size))
         
             patch = patch.convert('RGB')
-            patch = imresize(patch, (resize_to, resize_to))
+            patch = patch.resize((resize_to, resize_to))
+            patch = np.array(patch)
             
             # Check if we should keep patch
             if keep_tile((0, patch), resize_to, thresh) == False:
@@ -300,3 +284,5 @@ for i, file in enumerate(os.listdir(PATH)):
             os.makedirs(target)
         joined_image.save(target + file.split('.')[0] + '.png')
 
+
+# %%

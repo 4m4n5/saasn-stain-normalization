@@ -38,7 +38,7 @@ warnings.filterwarnings('ignore')
 args = {
     'epochs': 100,
     'decay_epoch': 60,
-    'batch_size': 16,
+    'batch_size': 4,
     'lr': 0.0002,
     'load_height': 128,
     'load_width': 128,
@@ -51,9 +51,9 @@ args = {
     'delta': 0.1, # Identity
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/1000_SEEM_Cinn/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/1000_SEEM_Cinn/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/1000_SEEM_Cinn/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi_svs/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi_svs/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi_svs/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -63,7 +63,7 @@ args = {
     'self_attn': True,
     'spectral': True,
     'log_freq': 50,
-    'custom_tag': 'zif_cinn',
+    'custom_tag': 'vsi_svs',
     'gen_samples': True,
     'specific_samples': False
 }
@@ -108,10 +108,10 @@ def data_learner_init(PATH, sz, tfms, normalize_stats, model_load_name):
         data.normalize(normalize_stats)
         print('Data Normalized')
     
-    learn = cnn_learner(data, models.resnet101, metrics=accuracy)
+    learn = cnn_learner(data, models.resnet50, metrics=accuracy)
     print('Model Initialized')
     if model_load_name:
-        learn.load('unfreeze101-epoch-1-meanstdnorm')
+        learn.load(model_load_name)
         print('Moel Loaded')
     
     return data, learn, normalize_stats
@@ -121,22 +121,22 @@ def data_learner_init(PATH, sz, tfms, normalize_stats, model_load_name):
 # Common paramters
 patch_size = 1000
 target_size = 256
-target = '/scratch/as3ek/misc/gradcams_seem_vsi/' # for Gradcam WSI
+target = '/scratch/as3ek/misc/gradcams_seem_vsi_cutoff0.3/' # for Gradcam WSI
 thresh = 0 # %-age tissue coverrage cutoff
 overlap = 0 # %-age area
 
 # Stain Normalization Parameters
-UNNORM_WSI_PATH = '/project/DSone/biopsy_images/SEEM_New_crops_2/'
+UNNORM_WSI_PATH = '/project/DSone/biopsy_images/SEEM_New_crops/SEEM_New_Crops/'
 saasn_transform = transforms.Compose([transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])])
 one_direction = True # If this is false. a -> b -> a will happen. Edit code for otherwise.
 gen_name = 'Gba' # Gba to generate b given a, i.e., a -> b
 
 # DL Prediction parameters
-DL_DATA_PATH = "/project/DSone/as3ek/data/patches/1000/gannorm_seem_cinn_256/"
+DL_DATA_PATH = "/project/DSone/as3ek/data/patches/1000/classification/normal_zif__ee_vsi/"
 sz = target_size
 tfms = get_transforms(do_flip=True, flip_vert=True, max_zoom=1.1)
 dl_normalize_stats = 'batch_stats' # ([mean, mean, mean], [std, std, std]) if manual. False is no normalization
-model_load_name = 'unfreeze101-epoch-1-meanstdnorm' # False if none
+model_load_name = 'unfreeze50-epoch-1-meanstdnorm' # False if none
 cl = 0 # EE - 0 | Normal - 1
 
 
@@ -175,8 +175,8 @@ def hook_output (module:nn.Module, detach:bool=True, grad:bool=False)->Hook:
 
 
 # %%
-def gradcam_hm(learn, im, cl):
-
+def gradcam_hm(learn, im, cl, c, heatmap_thresh=16):
+#     import pdb; pdb.set_trace()
     m = learn.model.eval()
     im = Image(im[0])
     cl = int(cl)
@@ -185,15 +185,25 @@ def gradcam_hm(learn, im, cl):
     with hook_output(m[0]) as hook_a: 
         with hook_output(m[0], grad=True) as hook_g:
             preds = m(xb)
+#             print(preds)
             preds[0,int(cl)].backward() 
     acts  = hook_a.stored[0].cpu() #activation maps
-    if (acts.shape[-1]*acts.shape[-2]) >= 16:
+    if (acts.shape[-1]*acts.shape[-2]) >= heatmap_thresh:
         grad = hook_g.stored[0][0].cpu()
         grad_chan = grad.mean(1).mean(1)
         mult = F.relu(((acts*grad_chan[...,None,None])).sum(0))
         xb_im = Image(denormalize(xb[0], dl_norm_stats[0], dl_norm_stats[1]))
+
+#         Patch gradcam
+#         _,ax = plt.subplots()
+#         sz = list(xb_im.shape[-2:])
+#         xb_im.show(ax)
+#         ax.imshow(mult, alpha=0.6, extent=(0,*sz[::-1],0),
+#           interpolation='bilinear', cmap='magma')
+#         _.savefig('/scratch/as3ek/misc/tmp/' + c + '.jpg')
+#         plt.close(_)
+#         mult = mult * preds[0,int(cl)]
         return xb_im, mult
-    
     
 def apply_colormap_on_image(org_im, activation, colormap_name):
     """
@@ -236,7 +246,10 @@ for i, file_path in enumerate(files):
     # Initialize x and y coord
     x_cord = 0
     y_cord = 0
-
+    
+    if hm_dims == (0, 0):
+        continue
+        
     # Full scale wsi
     wsi = PILImage.new('RGB', new_dims)
     com_hm = PILImage.new('L', hm_dims)
@@ -263,8 +276,9 @@ for i, file_path in enumerate(files):
 
             out = out.detach().cpu()
             out = (out + 1) / 2
-
-            xb_img, mult = gradcam_hm(learn, out, cl)
+            
+            c = file + str(x_cord) + '_' + str(y_cord)
+            xb_img, mult = gradcam_hm(learn, out, cl, c)
 
             img = out.numpy()[0]
             img = np.transpose(img, (1,2,0))
@@ -292,10 +306,12 @@ for i, file_path in enumerate(files):
 
     cam = com_hm
     cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))  # Normalize between 0-1
+    cam[cam<0.3] = 0
     cam = np.uint8(cam * 255)  # Scale between 0-255 to visualize
     # Resize requires width, height
     cam = np.uint8(PILImage.fromarray(cam).resize((np.array(wsi).shape[1],
-                   np.array(wsi).shape[0]), PILImage.ANTIALIAS))/255
+                   np.array(wsi).shape[0]), PILImage.BILINEAR))/255
+
 
     no_trans_heatmap, heatmap_on_image = apply_colormap_on_image(wsi, cam, 'hsv')
     heatmap_on_image.save(target + file.split('.')[0] + '.png')

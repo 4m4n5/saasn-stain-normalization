@@ -1,10 +1,4 @@
 # %%
-
-# coding: utf-8
-
-# %%
-
-
 import javabridge
 import bioformats
 import tqdm
@@ -44,7 +38,6 @@ import json
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import argparse
-from scipy.misc import imread, imresize
 from PIL import Image
 import math
 
@@ -52,14 +45,10 @@ from sklearn.feature_extraction.image import reconstruct_from_patches_2d as reco
 
 
 # %%
-
-
 warnings.filterwarnings('ignore')
 
 
 # %%
-
-
 class Arguments(object):
     def __init__(self, dictionary):
         """Constructor"""
@@ -68,12 +57,10 @@ class Arguments(object):
 
 
 # %%
-
-
 args = {
-    'epochs': 100,
-    'decay_epoch': 60,
-    'batch_size': 16,
+    'epochs': 50,
+    'decay_epoch': 40,
+    'batch_size': 4,
     'lr': 0.0002,
     'load_height': 128,
     'load_width': 128,
@@ -86,9 +73,9 @@ args = {
     'delta': 0.1, # Identity
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/1000_SEEM_Cinn/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/1000_SEEM_Cinn/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/1000_SEEM_Cinn/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi_svs/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi_svs/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi_svs/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -98,8 +85,8 @@ args = {
     'self_attn': True,
     'spectral': True,
     'log_freq': 50,
-    'custom_tag': 'zif_cinn',
-    'gen_samples': True,
+    'custom_tag': 'vsi_svs',
+    'gen_samples': False,
     'specific_samples': False
 }
 
@@ -127,25 +114,21 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 # %%
-
-
 # Parameters
 one_direction = True # If this is false. a -> b -> a will happen. Edit code for otherwise.
 gen_name = 'Gba' # Gba to generate b given a, i.e., a -> b
-PATH = '/project/DSone/biopsy_images/SEEM_New_crops_2/'
+PATH = '/project/DSone/biopsy_images/SEEM_New_crops/SEEM_New_Crops/'
 patch_size = 1000
 resize_to = 256
 target = '/scratch/as3ek/misc/gannorm_wsi_seem_vsi/' # for WSI
-target_path_unnorm = '/project/DSone/as3ek/data/patches/1000/un_normalized/seem_ee_vsi/' # for unnormalized patches
-target_path = '/project/DSone/as3ek/data/patches/1000/gan_normalized/seem_ee_vsi/' # for normalized patches
+target_path_unnorm = '/project/DSone/as3ek/data/patches/1000/un_normalized/run2/seem_ee_vsi/' # for unnormalized patches
+target_path = '/project/DSone/as3ek/data/patches/1000/gan_normalized/run2/seem_ee_vsi/' # for normalized patches
 thresh = 0.50
 save_WSI = True
 overlap = 0.5 # %-age area
 
 
 # %%
-
-
 if one_direction:
     G = define_Gen(input_nc=3, output_nc=3, ngf=args.ngf, netG=args.gen_net, norm=args.norm, 
                                                     use_dropout= args.use_dropout, gpu_ids=args.gpu_ids, self_attn=args.self_attn, spectral = args.spectral)
@@ -157,8 +140,6 @@ else:
 
 
 # %%
-
-
 ckpt = utils.load_checkpoint('%s/latest.ckpt' % (args.checkpoint_path))
 if one_direction:
     G.load_state_dict(ckpt[gen_name])
@@ -172,14 +153,10 @@ print('Eval mode')
 
 
 # %%
-
-
 javabridge.start_vm(class_path=bioformats.JARS)
 
 
 # %%
-
-
 def optical_density(tile):
     tile = tile.astype(np.float64)
     od = -np.log((tile+1)/240)
@@ -212,8 +189,6 @@ def keep_tile(tile_tuple, tile_size, tissue_threshold):
 
 
 # %%
-
-
 def get_img_paths_vsi(train_paths):
     images = {}
     files = glob.glob(os.path.join(train_paths, '*.vsi'))
@@ -225,8 +200,6 @@ def get_img_paths_vsi(train_paths):
 
 
 # %%
-
-
 transform = transforms.Compose([
     transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
 ])
@@ -235,6 +208,9 @@ files = list(get_img_paths_vsi(PATH).values())
 num_files = len(files)
 
 for i, file in enumerate(files):
+    if i < 130:
+        print(i)
+        continue
     image = bioformats.ImageReader(file)
     rescale = resize_to / patch_size
     height, width, c = np.array(image.read(rescale=False)).shape
@@ -249,12 +225,16 @@ for i, file in enumerate(files):
     if save_WSI:
         joined_image = Image.new('RGB', (new_dims))
     
-    while x_cord + patch_size < width - 0:
-        while y_cord + patch_size < height - 0:
+    
+        
+    
+    while x_cord + patch_size < width:
+        while y_cord + patch_size < height:
             patch = Image.fromarray(np.array(image.read(rescale=False, XYWH=(x_cord, y_cord, patch_size, patch_size))))
         
             patch = patch.convert('RGB')
-            patch = imresize(patch, (resize_to, resize_to))
+            patch = patch.resize((resize_to, resize_to))
+            patch = np.array(patch)
             
             # Check if we should keep patch
             if keep_tile((0, patch), resize_to, thresh) == False:
@@ -311,25 +291,3 @@ for i, file in enumerate(files):
 
 
 # %%
-
-
-Image.fromarray(np.array(image.read(z=0, rescale=False, XYWH=(2000, 4000, patch_size, patch_size))))
-
-
-# %%
-
-
-image.
-
-
-# %%
-
-
-image.read(rescale=False, XYWH=(16000, 2000, patch_size, patch_size))
-
-
-# %%
-
-
-project(/DSone/as3ek/data/ganstain/1000_SEEM_Cinn/checkpoint/unet_128_n_layers_0.0002_batch_attn_spectral_16_128_coefs_6_5_2_0.1_zif_cinn/latest.ckpt)
-

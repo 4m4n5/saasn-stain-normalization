@@ -23,9 +23,9 @@ warnings.filterwarnings('ignore')
 
 # %%
 args = {
-    'epochs': 100,
-    'decay_epoch': 60,
-    'batch_size': 16,
+    'epochs': 50,
+    'decay_epoch': 40,
+    'batch_size': 4,
     'lr': 0.0002,
     'load_height': 128,
     'load_width': 128,
@@ -38,9 +38,9 @@ args = {
     'delta': 0.1, # Identity
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/zif_cinn/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/zif_cinn/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/zif_cinn/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/run2/zif_svs/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/run2/zif_svs/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/run2/zif_svs/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -50,8 +50,8 @@ args = {
     'self_attn': True,
     'spectral': True,
     'log_freq': 50,
-    'custom_tag': 'zif_cinn',
-    'gen_samples': True,
+    'custom_tag': 'vsi_svs',
+    'gen_samples': False,
     'specific_samples': False
 }
 

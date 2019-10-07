@@ -18,9 +18,9 @@ class Arguments(object):
 
 # +
 args = {
-    'epochs': 10,
-    'decay_epoch': 9,
-    'batch_size': 16,
+    'epochs': 5,
+    'decay_epoch': 2,
+    'batch_size': 4,
     'lr': 0.0002,
     'load_height': 128,
     'load_width': 128,
@@ -33,9 +33,9 @@ args = {
     'delta': 0.1, # Identity
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/vsi_zif/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/vsi_zif/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/vsi_zif/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi2svs_zif2svs/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi2svs_zif2svs/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi2svs_zif2svs/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -45,10 +45,9 @@ args = {
     'self_attn': True,
     'spectral': True,
     'log_freq': 50,
-    'custom_tag': 'double_normalization',
+    'custom_tag': 'vsi2svs_zif2svs',
     'gen_samples': False,
-    'specific_samples': False,
-    'continue_epoch': 1
+    'specific_samples': False
 }
 
 args = Arguments(args)
@@ -91,3 +90,5 @@ def main(args):
 
 
 main(args)
+
+
