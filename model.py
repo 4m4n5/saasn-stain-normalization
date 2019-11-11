@@ -176,7 +176,7 @@ class cycleGAN(object):
                                 (self.ssim(b_fake_gray, a_recon_gray))) * args.gamma
               
                 # Total Generator Loss
-                gen_loss = a_gen_loss + b_gen_loss + a_cycle_loss + b_cycle_loss + a_scyc_loss + b_cycle_loss + a_idt_loss + b_idt_loss + ba_ssim_loss + ab_ssim_loss 
+                gen_loss = a_gen_loss + b_gen_loss + a_cycle_loss + b_cycle_loss + a_scyc_loss + b_scyc_loss + a_idt_loss + b_idt_loss + ba_ssim_loss + ab_ssim_loss 
                 
                 # Update Generators
                 gen_loss.backward()
@@ -247,7 +247,7 @@ class cycleGAN(object):
                     with canvas:
                         canvas.draw_plot([Gba_history['gen_loss'], Gba_history['cycle_loss'], 
                                           Gba_history['idt_loss'], Gba_history['ssim_loss'],
-                                          Gab_history['scyc_loss']], 
+                                          Gba_history['scyc_loss']], 
                                          labels=['Adv loss', 'Cycle loss', 'Identity loss', 'SSIM', 'SCyC loss'])
                         
                         canvas.draw_plot([Gab_history['gen_loss'], Gab_history['cycle_loss'], 

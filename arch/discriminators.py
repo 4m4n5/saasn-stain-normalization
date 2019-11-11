@@ -73,7 +73,7 @@ def define_Dis(input_nc, ndf, netD, n_layers_D=3, norm='batch', gpu_ids=[0], spe
     if netD == 'n_layers':
         dis_net = NLayerDiscriminator(input_nc, ndf, n_layers_D, norm_layer=norm_layer, use_bias=use_bias, spectral=spectral, self_attn=self_attn)
     elif netD == 'pixel':
-        dis_net = PixelDiscriminator(input_nc, ndf, norm_layer=norm_layer, use_bias=use_bias, self_attn=self_attn)
+        dis_net = PixelDiscriminator(input_nc, ndf, norm_layer=norm_layer, use_bias=use_bias)
     else:
         raise NotImplementedError('Discriminator model name [%s] is not recognized' % netD)
 

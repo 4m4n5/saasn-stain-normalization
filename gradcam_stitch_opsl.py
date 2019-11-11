@@ -8,15 +8,26 @@ import numpy as np
 
 # Torch
 import torch
+import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 
 # Image functions
-from PIL import Image
+from PIL import Image as PILImage
 
 # Own code
 import utils
 from arch import define_Gen
+
+# DL Prediction
+from fastai.vision import *
+from fastai.metrics import accuracy
+from fastai.callbacks.hooks import *
+from fastai.callback import *
+
+# Misc
+import matplotlib.cm as mpl_color_map
+import copy
 
 warnings.filterwarnings('ignore')
 
@@ -81,12 +92,12 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # %%
 # Parameters
-one_direction = False # If this is false. b -> a -> b will happen. Edit code for otherwise.
+one_direction = True # If this is false. b -> a -> b will happen. Edit code for otherwise.
 gen_name = 'Gba' # Gba to generate b given a, i.e., a -> b
-PATH = '/project/DSone/biopsy_images/SEEM_New_crops/SEEM_New_Crops/'
+PATH = '/project/DSone/biopsy_images/ileum/Crohns_ndpi/B1/'
 patch_size = 1000
 resize_to = 256
-target = '/scratch/as3ek/misc/gannorm_wsi_cinn_svs/' # for WSI
+target = '/scratch/as3ek/misc/gannorm_ndpi_test/' # for WSI
 target_path_unnorm = '/project/DSone/as3ek/data/patches/1000/un_normalized/cinn_normal_svs/' # for unnormalized patches
 target_path = '/project/DSone/as3ek/data/patches/1000/gan_normalized/cinn_normal_svs/' # for normalized patches
 thresh = 0

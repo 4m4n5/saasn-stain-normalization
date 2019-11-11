@@ -19,34 +19,34 @@ class Arguments(object):
 # +
 args = {
     'epochs': 5,
-    'decay_epoch': 2,
-    'batch_size': 4,
+    'decay_epoch': 3,
+    'batch_size': 16,
     'lr': 0.0002,
     'load_height': 128,
     'load_width': 128,
     'gpu_ids': '0',
     'crop_height': 128,
     'crop_width': 128,
-    'alpha': 6, # Cyc loss
-    'beta': 5, # Scyc loss
-    'gamma': 2, # Dssim loss 
-    'delta': 0.1, # Identity
+    'alpha': 10, # Cyc loss
+    'beta': 0, # Scyc loss
+    'gamma': 0, # Dssim loss 
+    'delta': 0.5, # Identity
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi2svs_zif2svs/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi2svs_zif2svs/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi2svs_zif2svs/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/cvpr/500_2_1/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/cvpr/500_2_1/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/cvpr/500_2_1/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
     'ndf': 64,
-    'gen_net': 'unet_128',
+    'gen_net': 'resnet_9blocks',
     'dis_net': 'n_layers',
-    'self_attn': True,
-    'spectral': True,
+    'self_attn': False,
+    'spectral': False,
     'log_freq': 50,
-    'custom_tag': 'vsi2svs_zif2svs',
-    'gen_samples': False,
+    'custom_tag': 'staingan_n_layer',
+    'gen_samples': True,
     'specific_samples': False
 }
 
