@@ -208,9 +208,6 @@ files = list(get_img_paths_vsi(PATH).values())
 num_files = len(files)
 
 for i, file in enumerate(files):
-    if i < 130:
-        print(i)
-        continue
     image = bioformats.ImageReader(file)
     rescale = resize_to / patch_size
     height, width, c = np.array(image.read(rescale=False)).shape
