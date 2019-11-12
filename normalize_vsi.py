@@ -211,7 +211,7 @@ for i, file in enumerate(files):
     image = bioformats.ImageReader(file)
     rescale = resize_to / patch_size
     height, width, c = np.array(image.read(rescale=False)).shape
-    new_dims = int(rescale * (width // resize_to) * resize_to) ,     int(rescale * (height // resize_to) * resize_to)
+    new_dims = int(rescale * (width // resize_to) * resize_to), int(rescale * (height // resize_to) * resize_to)
     
     file = file.split('/')[-1]
     
@@ -221,9 +221,6 @@ for i, file in enumerate(files):
     
     if save_WSI:
         joined_image = Image.new('RGB', (new_dims))
-    
-    
-        
     
     while x_cord + patch_size < width:
         while y_cord + patch_size < height:
