@@ -121,7 +121,7 @@ def data_learner_init(PATH, sz, tfms, normalize_stats, model_load_name):
 # Common paramters
 patch_size = 1000
 target_size = 256
-target = '/scratch/as3ek/misc/feature_gradcam/' # for Gradcam WSI
+target = '/scratch/as3ek/misc/feature_gradcam/group_2/' # for Gradcam WSI
 thresh = 0 # %-age tissue coverrage cutoff
 overlap = 0 # %-age area
 
@@ -140,7 +140,7 @@ model_load_name = 'unfreeze50-epoch-1-meanstdnorm' # False if none
 cl = 0 # EE - 0 | Normal - 1
 
 # Gene correlation parameters
-custom_list = ['CFTR', 'CLDN15', 'MLXIPL']
+custom_list = ['LRAT','SHMT1','MTHFS','SLC19A1','CYB5A','ISX','CYP4F2']
 corr_data = pd.read_csv('/scratch/as3ek/histo_visual_recog/scripts/data/corr_metric_cutoff_7.csv')
 top_genes = pd.read_csv('/scratch/as3ek/histo_visual_recog/scripts/data/top_gene_feature_list.csv')
 
@@ -331,7 +331,10 @@ for i, file_path in enumerate(files):
         no_trans_heatmap, heatmap_on_image = apply_colormap_on_image(wsi, cam, 'hsv')
         heatmap_on_image.save(target + file.split('.')[0] + '_' + gene + '.png')
 
-        print(str(i + 1) + '/' + str(num_files) + ' Complete!')
+    print(str(i + 1) + '/' + str(num_files) + ' Complete!')
 
+
+# %%
+file_path
 
 # %%
