@@ -27,15 +27,15 @@ args = {
     'gpu_ids': '0',
     'crop_height': 128,
     'crop_width': 128,
-    'alpha': 10, # Cyc loss
+    'alpha': 5, # Cyc loss
     'beta': 5, # Scyc loss
-    'gamma': 5, # Dssim loss 
-    'delta': 0.5, # Identity
+    'gamma': 10, # Dssim loss 
+    'delta': 0.1, # Identity
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/CCHMC_vsi_svs/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/CCHMC_vsi_svs/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/CCHMC_vsi_svs/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/colorization/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/colorization/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/colorization/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
