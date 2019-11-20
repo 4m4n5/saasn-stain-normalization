@@ -121,7 +121,7 @@ def data_learner_init(PATH, sz, tfms, normalize_stats, model_load_name):
 # Common paramters
 patch_size = 1000
 target_size = 256
-target = '/scratch/as3ek/misc/feature_gradcam/group_2/' # for Gradcam WSI
+target = '/scratch/as3ek/misc/feature_gradcam/diff_groups/' # for Gradcam WSI
 thresh = 0 # %-age tissue coverrage cutoff
 overlap = 0 # %-age area
 
@@ -140,7 +140,8 @@ model_load_name = 'unfreeze50-epoch-1-meanstdnorm' # False if none
 cl = 0 # EE - 0 | Normal - 1
 
 # Gene correlation parameters
-custom_list = ['LRAT','SHMT1','MTHFS','SLC19A1','CYB5A','ISX','CYP4F2']
+custom_list_1 = ['LDHD','DDO','ADI1','ALDH1A1','IYD','ADH4','DHDH','DHRS11','AKR1B10']
+custom_list_2 = ['LRAT','SHMT1','MTHFS','SLC19A1','CYB5A','ISX','CYP4F2']
 corr_data = pd.read_csv('/scratch/as3ek/histo_visual_recog/scripts/data/corr_metric_cutoff_7.csv')
 top_genes = pd.read_csv('/scratch/as3ek/histo_visual_recog/scripts/data/top_gene_feature_list.csv')
 
@@ -233,108 +234,120 @@ def apply_colormap_on_image(org_im, activation, colormap_name):
 
 
 # %%
-files = list(get_img_paths_vsi(UNNORM_WSI_PATH).values())
+feature_list_1 = []
+feature_list_2 = []
+
+for gene in custom_list_2:
+    feature_list_2 += list(corr_data[corr_data['Gene Symbol'] == gene]['Feature'])
+
+for gene in custom_list_1:
+    feature_list_1 += list(corr_data[corr_data['Gene Symbol'] == gene]['Feature'])
+
+# %%
+feature_list_1 = np.unique(feature_list_1)
+feature_list_2 = np.unique(feature_list_2)
+
+# %%
+diff_feature_list_1 = [x for x in feature_list_1 if x not in feature_list_2]
+diff_feature_list_2 = [x for x in feature_list_2 if x not in feature_list_1]
+
+# %%
+feature_list = diff_feature_list_1
+
+# %%
+files = list(get_img_paths_vsi(UNNORM_WSI_PATH).values())[0:2]
 num_files = len(files)
 
 for i, file_path in enumerate(files):
+    image = bioformats.ImageReader(file_path)
+    rescale = target_size / patch_size
+    height, width, c = np.array(image.read(rescale=False)).shape
+    new_dims = int(rescale * (width // patch_size) * patch_size), int(rescale * (height // patch_size) * patch_size)
 
-    gene_list = list(list(np.unique(top_genes['Gene Symbol'])))
-    
-    if len(custom_list) != 0:
-        gene_list = custom_list 
-    
-    for gene in gene_list:
-        feature_list = list(corr_data[corr_data['Gene Symbol'] == gene]['Feature'])
-        
-        image = bioformats.ImageReader(file_path)
-        rescale = target_size / patch_size
-        height, width, c = np.array(image.read(rescale=False)).shape
-        new_dims = int(rescale * (width // patch_size) * patch_size), int(rescale * (height // patch_size) * patch_size)
+    hm_rescale = 8 / target_size
+    hm_dims = int(new_dims[0] * hm_rescale), int(new_dims[1] * hm_rescale)
+    file = file_path.split('/')[-1]
 
-        hm_rescale = 8 / target_size
-        hm_dims = int(new_dims[0] * hm_rescale), int(new_dims[1] * hm_rescale)
-        file = file_path.split('/')[-1]
+    # Initialize x and y coord
+    x_cord = 0
+    y_cord = 0
 
-        # Initialize x and y coord
-        x_cord = 0
-        y_cord = 0
+    if hm_dims == (0, 0):
+        continue
 
-        if hm_dims == (0, 0):
-            continue
+    # Full scale wsi
+    wsi = PILImage.new('RGB', new_dims)
+    com_hm = PILImage.new('L', hm_dims)
 
-        # Full scale wsi
-        wsi = PILImage.new('RGB', new_dims)
-        com_hm = PILImage.new('L', hm_dims)
+    while y_cord + patch_size < height - 0:
+        while x_cord + patch_size < width - 0:
+            patch = PILImage.fromarray(np.array(image.read(rescale=False, XYWH=(x_cord, y_cord, patch_size, patch_size))))
 
-        while y_cord + patch_size < height - 0:
-            while x_cord + patch_size < width - 0:
-                patch = PILImage.fromarray(np.array(image.read(rescale=False, XYWH=(x_cord, y_cord, patch_size, patch_size))))
+            patch = patch.convert('RGB')
+            patch = patch.resize((target_size, target_size))
+            patch = np.array(patch)
 
-                patch = patch.convert('RGB')
-                patch = patch.resize((target_size, target_size))
-                patch = np.array(patch)
+            patch = patch.transpose(2, 0, 1)
+            patch = patch / 255.
+            patch = torch.FloatTensor(patch).to(device)
+            patch = saasn_transform(patch)
+            patch = patch.unsqueeze(0)
 
-                patch = patch.transpose(2, 0, 1)
-                patch = patch / 255.
-                patch = torch.FloatTensor(patch).to(device)
-                patch = saasn_transform(patch)
-                patch = patch.unsqueeze(0)
+            if one_direction:
+                out = G(patch)
+            else:
+                out = Gba(patch)
+                out = Gab(out)
 
-                if one_direction:
-                    out = G(patch)
-                else:
-                    out = Gba(patch)
-                    out = Gab(out)
+            out = out.detach().cpu()
+            out = (out + 1) / 2
 
-                out = out.detach().cpu()
-                out = (out + 1) / 2
+            c = file + str(x_cord) + '_' + str(y_cord)
+            xb_img, mult = gradcam_hm(learn, out, cl, c, feature_list)
 
-                c = file + str(x_cord) + '_' + str(y_cord)
-                xb_img, mult = gradcam_hm(learn, out, cl, c, feature_list)
+            img = out.numpy()[0]
+            img = np.transpose(img, (1,2,0))
+            patch_join = PILImage.fromarray(np.uint8(img*255))
+            wsi.paste(patch_join, (int(x_cord*rescale), int(y_cord*rescale)))
 
-                img = out.numpy()[0]
-                img = np.transpose(img, (1,2,0))
-                patch_join = PILImage.fromarray(np.uint8(img*255))
-                wsi.paste(patch_join, (int(x_cord*rescale), int(y_cord*rescale)))
+            hm = mult.detach().cpu().numpy()
 
-                hm = mult.detach().cpu().numpy()
-
-                if x_cord == 0:
-                    hm_row = hm
-                else:
-                    hm_row = np.concatenate((hm_row, hm), axis=1)
-
-                # Taking care of overlap
-                x_cord = int(x_cord + (1 - overlap) * patch_size)
+            if x_cord == 0:
+                hm_row = hm
+            else:
+                hm_row = np.concatenate((hm_row, hm), axis=1)
 
             # Taking care of overlap
-            if y_cord == 0:
-                com_hm = hm_row
-            else:
-                com_hm = np.concatenate((com_hm, hm_row), axis = 0)
+            x_cord = int(x_cord + (1 - overlap) * patch_size)
 
-            y_cord = int(y_cord + (1 - overlap) * patch_size)
-            x_cord = 0
+        # Taking care of overlap
+        if y_cord == 0:
+            com_hm = hm_row
+        else:
+            com_hm = np.concatenate((com_hm, hm_row), axis = 0)
 
-        cam = com_hm
-        cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))  # Normalize between 0-1
+        y_cord = int(y_cord + (1 - overlap) * patch_size)
+        x_cord = 0
 
-        # Threshold
-        cam[cam<0.3] = 0
+    cam = com_hm
+    cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam))  # Normalize between 0-1
 
-        cam = np.uint8(cam * 255)  # Scale between 0-255 to visualize
-        # Resize requires width, height
-        cam = np.uint8(PILImage.fromarray(cam).resize((np.array(wsi).shape[1],
-                       np.array(wsi).shape[0]), PILImage.BILINEAR))/255
+    # Threshold
+    cam[cam<0.3] = 0
+
+    cam = np.uint8(cam * 255)  # Scale between 0-255 to visualize
+    # Resize requires width, height
+    cam = np.uint8(PILImage.fromarray(cam).resize((np.array(wsi).shape[1],
+                   np.array(wsi).shape[0]), PILImage.BILINEAR))/255
 
 
-        no_trans_heatmap, heatmap_on_image = apply_colormap_on_image(wsi, cam, 'hsv')
-        heatmap_on_image.save(target + file.split('.')[0] + '_' + gene + '.png')
+    no_trans_heatmap, heatmap_on_image = apply_colormap_on_image(wsi, cam, 'hsv')
+    heatmap_on_image.save(target + file.split('.')[0] + '_' + gene + '_1.png')
 
     print(str(i + 1) + '/' + str(num_files) + ' Complete!')
 
 
 # %%
-file_path
+files
 
 # %%
