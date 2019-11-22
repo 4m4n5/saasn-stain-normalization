@@ -18,8 +18,8 @@ class Arguments(object):
 
 # +
 args = {
-    'epochs': 10,
-    'decay_epoch': 5,
+    'epochs': 100,
+    'decay_epoch': 60,
     'batch_size': 4,
     'lr': 0.0002,
     'load_height': 128,
@@ -27,9 +27,9 @@ args = {
     'gpu_ids': '0',
     'crop_height': 128,
     'crop_width': 128,
-    'alpha': 10, # Cyc loss
+    'alpha': 5, # Cyc loss
     'beta': 5, # Scyc loss
-    'gamma': 5, # Dssim loss 
+    'gamma': 10, # Dssim loss 
     'delta': 0.1, # Identity
     'training': True,
     'testing': True,

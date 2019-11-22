@@ -140,8 +140,12 @@ model_load_name = 'unfreeze50-epoch-1-meanstdnorm' # False if none
 cl = 0 # EE - 0 | Normal - 1
 
 # Gene correlation parameters
-custom_list_1 = ['LDHD','DDO','ADI1','ALDH1A1','IYD','ADH4','DHDH','DHRS11','AKR1B10']
+custom_list_1 = ['CFTR', 'CLDN15', 'MXIPL']
 custom_list_2 = ['LRAT','SHMT1','MTHFS','SLC19A1','CYB5A','ISX','CYP4F2']
+custom_list_3 = ['SLC26A3', 'SLC39A5', 'SLC5A4', 'SLC13A2', 'SLC25A15', 'SLC10A2']
+
+custom_lists = [custom_list_1, custom_list_2, custom_list_3]
+
 corr_data = pd.read_csv('/scratch/as3ek/histo_visual_recog/scripts/data/corr_metric_cutoff_7.csv')
 top_genes = pd.read_csv('/scratch/as3ek/histo_visual_recog/scripts/data/top_gene_feature_list.csv')
 
@@ -234,25 +238,32 @@ def apply_colormap_on_image(org_im, activation, colormap_name):
 
 
 # %%
-feature_list_1 = []
-feature_list_2 = []
-
-for gene in custom_list_2:
-    feature_list_2 += list(corr_data[corr_data['Gene Symbol'] == gene]['Feature'])
-
-for gene in custom_list_1:
-    feature_list_1 += list(corr_data[corr_data['Gene Symbol'] == gene]['Feature'])
+custom_lists
 
 # %%
-feature_list_1 = np.unique(feature_list_1)
-feature_list_2 = np.unique(feature_list_2)
+# Manipulate custom gene lists to get a final feature list
+feature_lists = []
+
+# Get unique list of cumulative features for all the gene groups
+for cus_list in custom_lists:
+    temp = []
+    for gene in cus_list:
+        temp += list(corr_data[corr_data['Gene Symbol'] == gene]['Feature'])
+    feature_lists.append(np.unique(temp))
 
 # %%
-diff_feature_list_1 = [x for x in feature_list_1 if x not in feature_list_2]
-diff_feature_list_2 = [x for x in feature_list_2 if x not in feature_list_1]
+# Get a list of common features amongst the lists
+common_features = set(feature_lists[0])
+for s in feature_lists[1:]:
+    common_features.intersection_update(s)
+common_features = list(common_features)
 
 # %%
-feature_list = diff_feature_list_1
+# Get differential features for each group
+diff_features = []
+
+for feature_list in feature_lists:
+    diff_features.append([x for x in feature_list if x not in common_features])
 
 # %%
 files = list(get_img_paths_vsi(UNNORM_WSI_PATH).values())[0:2]
