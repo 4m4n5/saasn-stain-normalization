@@ -33,25 +33,26 @@ class Arguments(object):
 
 
 # +
+
 args = {
     'epochs': 10,
     'decay_epoch': 9,
-    'batch_size': 4,
+    'batch_size': 1,
     'lr': 0.0002,
     'load_height': 128,
     'load_width': 128,
     'gpu_ids': '0',
     'crop_height': 128,
     'crop_width': 128,
-    'alpha': 6, # Cyc loss
+    'alpha': 10, # Cyc loss
     'beta': 5, # Scyc loss
-    'gamma': 2, # Dssim loss 
-    'delta': 0.1, # Identity
+    'gamma': 5, # Dssim loss 
+    'delta': 0.5, # Identity
     'training': True,
     'testing': True,
-    'results_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi_svs/results/',
-    'dataset_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi_svs/',
-    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/run2/vsi_svs/checkpoint/',
+    'results_dir': '/project/DSone/as3ek/data/ganstain/CCHMC_vsi_svs/results/',
+    'dataset_dir': '/project/DSone/as3ek/data/ganstain/CCHMC_vsi_svs/',
+    'checkpoint_dir': '/project/DSone/as3ek/data/ganstain/CCHMC_vsi_svs/checkpoint/',
     'norm': 'batch',
     'use_dropout': False,
     'ngf': 64,
@@ -61,7 +62,7 @@ args = {
     'self_attn': True,
     'spectral': True,
     'log_freq': 50,
-    'custom_tag': 'vsi_svs',
+    'custom_tag': '',
     'gen_samples': False,
     'specific_samples': False
 }
@@ -71,8 +72,8 @@ args = Arguments(args)
 
 
 # SOURCE AND TARGET FOLDERS
-source_path = '/project/DSone/as3ek/data/patches/1000/un_normalized/run2/cinn_normal_svs/'
-target_path = '/project/DSone/as3ek/data/patches/1000/gan_normalized/run2/cinn_normal_svs/'
+source_path = '/project/DSone/as3ek/data/patches/1000/classification/cinn_celiac__normal/valid/celiac/'
+target_path = '/project/DSone/as3ek/data/patches/1000/gan_normalized/cinn_celiac__normal/valid/celiac/'
 train_valid_split = 1
 size = 256
 one_direction = False # If this is false. b -> a -> b will happen. Edit code for otherwise.
@@ -155,8 +156,8 @@ for i, patch_name in enumerate(os.listdir(source_path)):
     img = torch.FloatTensor(img).to(device)
     image = transform(img)
     image = image.unsqueeze(0)
-    if one_direction:
-        out = G(image)
+    if one_direction or patch_name.startswith('C'):
+        out = Gba(image)
     else:
         out = Gab(image)
         out = Gba(out)
